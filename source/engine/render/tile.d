@@ -148,16 +148,16 @@ enum TileType : int {
     NorthWind,
 
     /// 🀢
-    Flower1,
+    Plum,
 
     /// 🀣
-    Flower2,
+    Orchid,
 
     /// 🀤
-    Flower3,
+    Chrysanthemum,
 
     /// 🀥
-    Flower4,
+    Bamboo,
 
     /// 🀦
     Spring,
