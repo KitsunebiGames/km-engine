@@ -2,9 +2,9 @@ module engine;
 public import engine.log;
 public import engine.window;
 public import engine.input;
+public import engine.render;
 
 import bindbc.glfw;
-import bindbc.opengl;
 
 /**
     Initialize the game engine
