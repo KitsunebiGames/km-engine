@@ -23,6 +23,6 @@ dub build --build=release --compiler=ldc2
 `--compiler=ldc2` is optional, but recommended for performance.
 
 ## June the Fox
-`(TODO: Insert art of June)`
+![June the Fox](/june.png)
 
 June is this project's mascot and shows in various places in the user interface.
