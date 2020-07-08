@@ -4,14 +4,16 @@
     
     Authors: Luna Nielsen
 */
-module game.gamestate.mainmenu;
+module game.gamestate.intro;
 import game.gamestate;
 import engine;
+import game;
+import std.format;
 
 /**
     Main menu state
 */
-class MainMenuState : GameState {
+class IntroState : GameState {
 public:
     /**
         No passthrough
@@ -22,7 +24,6 @@ public:
 
 override:
     void update() {
-        
     }
 
     void draw() {
@@ -30,7 +31,6 @@ override:
     }
 
     void onActivate() {
-        AppLog.info("MainMenu", "Main Menu state is active...");
-        GameWindow.title = "Kitsune Mahjong: Main Menu";
+        GameWindow.title = "Welcome to Kitsune Mahjong";
     }
 }
