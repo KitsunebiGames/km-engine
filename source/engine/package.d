@@ -1,6 +1,7 @@
 module engine;
 public import engine.log;
 public import engine.window;
+public import engine.input;
 
 import bindbc.glfw;
 import bindbc.opengl;
@@ -8,15 +9,20 @@ import bindbc.opengl;
 /**
     Initialize the game engine
 */
-void initializeEngine() {
+void initEngine() {
 
     initGLFW();
     glfwInit();
-    AppLog.info("GLFW initialized...");
+    AppLog.info("Engine", "GLFW initialized...");
 
     initOGL();
-    GameWindow = new Window("Kitsune Mahjong");
+    GameWindow = new Window();
+    AppLog.info("Engine", "Window initialized...");
 
+    GameWindow.makeCurrent();
+
+    initInput(GameWindow.winPtr);
+    AppLog.info("Engine", "Input system initialized...");
 }
 
 /**
@@ -31,17 +37,17 @@ void closeEngine() {
 private void initGLFW() {
     auto support = loadGLFW();
     if (support == GLFWSupport.badLibrary) {
-        AppLog.fatal("Could not load GLFW, bad library!");
+        AppLog.fatal("Engine", "Could not load GLFW, bad library!");
     } else if (support == GLFWSupport.noLibrary) {
-        AppLog.fatal("Could not load GLFW, no library found!");
+        AppLog.fatal("Engine", "Could not load GLFW, no library found!");
     }
 }
 
 private void initOGL() {
     auto support = loadOpenGL();
     if (support == GLSupport.badLibrary) {
-        AppLog.fatal("Could not load OpenGL, bad library!");
+        AppLog.fatal("Engine", "Could not load OpenGL, bad library!");
     } else if (support == GLSupport.noLibrary) {
-        AppLog.fatal("Could not load OpenGL, no library found!");
+        AppLog.fatal("Engine", "Could not load OpenGL, no library found!");
     }
 }

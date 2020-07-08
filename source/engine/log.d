@@ -59,8 +59,20 @@ public:
     /**
         Write info log to stdout
     */
-    void info(T...)(string text, T fmt) {
-        string logText = "info: " ~ text.format(fmt);
+    void info(T...)(string sender, string text, T fmt) {
+        string logText = "[%s] info: %s".format(sender, text.format(fmt));
+        writeln(logText);
+        
+        if (logToFile) {
+            this.writeLogToFile(logText);
+        }
+    }
+
+    /**
+        Write warning log to stdout
+    */
+    void warn(T...)(string sender, string text, T fmt) {
+        string logText = "[%s] warning: %s".format(sender, text.format(fmt));
         writeln(logText);
         
         if (logToFile) {
@@ -71,8 +83,8 @@ public:
     /**
         Writes error to stderr
     */
-    void error(T...)(string text, T fmt) {
-        string logText = "error: " ~ text.format(fmt);
+    void error(T...)(string sender, string text, T fmt) {
+        string logText = "[%s] error: %s".format(sender, text.format(fmt));
         stderr.writeln(logText);
 
         if (logToFile) {
@@ -83,8 +95,8 @@ public:
     /**
         Writes a fatal error to stderr and quits the application with status -1
     */
-    void fatal(T...)(string text, T fmt) {
-        string logText = "fatal: " ~ text.format(fmt);
+    void fatal(T...)(string sender, string text, T fmt) {
+        string logText = "[%s] fatal: %s".format(sender, text.format(fmt));
         stderr.writeln(logText);
 
         if (logToFile) {
