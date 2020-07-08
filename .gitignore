@@ -1,0 +1,15 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/kitsune-mahjong
+kitsune-mahjong.so
+kitsune-mahjong.dylib
+kitsune-mahjong.dll
+kitsune-mahjong.a
+kitsune-mahjong.lib
+kitsune-mahjong-test-*
+*.exe
+*.o
+*.obj
+*.lst
