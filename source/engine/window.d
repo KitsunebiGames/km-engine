@@ -19,8 +19,11 @@ class Window {
 private:
     GLFWwindow* window;
     string title_;
-    int width;
-    int height;
+    int width_;
+    int height_;
+
+    int fbWidth;
+    int fbHeight;
 
 public:
 
@@ -36,8 +39,10 @@ public:
     */
     this(string title = "KitsuneMahjongEngine", int width = 640, int height = 480) {
         this.title_ = title;
-        this.width = width;
-        this.height = height;
+        this.width_ = width;
+        this.height_ = height;
+        this.fbWidth = width;
+        this.fbHeight = height;
 
         glfwWindowHint(GLFW_SAMPLES, 4);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -78,10 +83,25 @@ public:
     }
 
     /**
+        Gets the width of the window's framebuffer
+    */
+    @property int width() {
+        return this.fbWidth;
+    }
+
+    /**
+        Gets the height of the window's framebuffer
+    */
+    @property int height() {
+        return this.fbHeight;
+    }
+
+    /**
         poll for new window events
     */
-    void pollEvents() {
+    void update() {
         glfwPollEvents();
+        glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
     }
 
     /**
