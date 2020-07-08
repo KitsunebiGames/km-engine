@@ -13,3 +13,4 @@ kitsune-mahjong-test-*
 *.o
 *.obj
 *.lst
+dub.selections.json
