@@ -22,6 +22,12 @@ dub build --build=release --compiler=ldc2
 ```
 `--compiler=ldc2` is optional, but recommended for performance.
 
+## Licensing
+The source code is under the BSD 2-clause license and may be distributed freely as source and binary format.
+
+Game assets are copyrighted to this project's maintainers and/or is licensed for use in this project (Kitsune Mahjong).
+* You are not allowed to redistribute the game assets without express permission from the creator(s) - unless the license for the asset allows you to do so.
+
 ## June the Fox
 ![June the Fox](/june.png)
 
