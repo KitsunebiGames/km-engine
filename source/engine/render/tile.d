@@ -43,7 +43,7 @@ enum MahjongTileLength = 0.26;
     - Fox April Tile (Tile with drawing of April on it)
     - Fox Mei Tile (Tile with drawing of Mei on it)
 */
-enum TileType {
+enum TileType : int {
     
     /// 🀙
     Dot1,
@@ -209,10 +209,16 @@ enum TileType {
 }
 
 /**
-    How many of a type of tile there usually is in a sec
+    How many of a type of tile there usually is in a set
 */
-enum TileTypeCount {
+enum TileTypeCount : int {
     Dots = 4,
+    Bams = 4,
+    Craks = 4,
+    Winds = 4,
+    Dragons = 4,
+    Flowers = 1,
+    Seasons = 1
 
 }
 
