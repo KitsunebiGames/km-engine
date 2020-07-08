@@ -4,4 +4,11 @@
     
     Authors: Luna Nielsen
 */
-module game.boards.solitaire;
+module game.boards;
+
+/**
+    A board contains all the logic and rendering code used for a game
+*/
+class GameBoard {
+
+}

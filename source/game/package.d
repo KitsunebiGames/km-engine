@@ -6,6 +6,7 @@
 */
 module game;
 import engine;
+import game.gamestate;
 
 /**
     Initializes the game
@@ -14,6 +15,7 @@ void initGame() {
     GameWindow.title = "Kitsune Mahjong";
     glEnable(GL_BLEND);
     glEnable(GL_CULL_FACE);
+    GameStateManager.push(new MainMenuState());
 }
 
 /**
@@ -27,7 +29,8 @@ void gameLoop() {
         glClear(GL_DEPTH_BUFFER_BIT);
 
         // Update and render the game
-
+        GameStateManager.update();
+        GameStateManager.draw();
 
         // Swap buffers and poll stuff
         GameWindow.swapBuffers();
