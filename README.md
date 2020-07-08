@@ -26,3 +26,5 @@ dub build --build=release --compiler=ldc2
 ![June the Fox](/june.png)
 
 June is this project's mascot and shows in various places in the user interface.
+
+June was designed by [Amasenutiko](https://www.deviantart.com/amasenutiko)
