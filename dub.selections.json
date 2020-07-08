@@ -4,6 +4,7 @@
 		"bindbc-glfw": "0.10.0",
 		"bindbc-loader": "0.3.1",
 		"bindbc-openal": "0.4.1",
-		"bindbc-opengl": "0.13.0"
+		"bindbc-opengl": "0.13.0",
+		"sharpevents": "2.0.0"
 	}
 }
