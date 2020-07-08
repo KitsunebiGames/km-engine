@@ -6,6 +6,8 @@ import engine;
 */
 void initGame() {
     GameWindow.title = "Kitsune Mahjong";
+    glEnable(GL_BLEND);
+    glEnable(GL_CULL_FACE);
 }
 
 /**
@@ -13,6 +15,10 @@ void initGame() {
 */
 void gameLoop() {
     while(!GameWindow.isExitRequested) {
+        // Clear color and depth buffers
+        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_DEPTH_BUFFER_BIT);
+
         // Update and render the game
 
         // Swap buffers and poll stuff

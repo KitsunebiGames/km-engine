@@ -11,16 +11,21 @@ import bindbc.glfw;
 */
 void initEngine() {
 
+    // Initialize GLFW
     initGLFW();
     glfwInit();
     AppLog.info("Engine", "GLFW initialized...");
 
-    initOGL();
+    // Create window
     GameWindow = new Window();
+    GameWindow.makeCurrent();
     AppLog.info("Engine", "Window initialized...");
 
-    GameWindow.makeCurrent();
+    // Initialize OpenGL and make context current
+    initOGL();
+    AppLog.info("Engine", "OpenGL initialized...");
 
+    // Initialzie input
     initInput(GameWindow.winPtr);
     AppLog.info("Engine", "Input system initialized...");
 }
@@ -49,5 +54,7 @@ private void initOGL() {
         AppLog.fatal("Engine", "Could not load OpenGL, bad library!");
     } else if (support == GLSupport.noLibrary) {
         AppLog.fatal("Engine", "Could not load OpenGL, no library found!");
+    } else if (support == GLSupport.noContext) {
+        AppLog.fatal("Engine", "OpenGL context was not created before loading OpenGL.");
     }
 }
