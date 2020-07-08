@@ -236,7 +236,7 @@ void onCharEventHandler(dchar key) {
     Keyboard.onKeyboardType(null, key);
 }
 
-private nothrow extern(C):
+nothrow extern(C):
 void onKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     Keyboard.numLock = (mods & GLFW_MOD_NUM_LOCK) > 0;
     Keyboard.capsLock = (mods & GLFW_MOD_CAPS_LOCK) > 0;
@@ -245,7 +245,7 @@ void onKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mo
     (cast(void function(Key) nothrow)&onKeyEventHandler)(cast(Key)key);
 }
 
-private void onCharCallback(GLFWwindow* window, uint codepoint) {
+void onCharCallback(GLFWwindow* window, uint codepoint) {
     Keyboard.curChar = cast(dchar)codepoint;
 
     // Cursed magic to make our exception throwing D event handler be callable from this C function
