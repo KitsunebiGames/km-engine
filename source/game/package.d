@@ -1,3 +1,9 @@
+/*
+    Copyright © 2020, Luna Nielsen
+    Distributed under the 2-Clause BSD License, see LICENSE file.
+    
+    Authors: Luna Nielsen
+*/
 module game;
 import engine;
 
@@ -20,6 +26,7 @@ void gameLoop() {
         glClear(GL_DEPTH_BUFFER_BIT);
 
         // Update and render the game
+
 
         // Swap buffers and poll stuff
         GameWindow.swapBuffers();
