@@ -7,6 +7,7 @@
 import std.stdio;
 import engine;
 import game;
+import core.memory;
 
 int main(string[] args)
 {
@@ -25,5 +26,8 @@ int main(string[] args)
 		AppLog.fatal("AppMain", ex.msg);
 	}
 
+	// Destroy the app log and collect causing other destructors to also be run
+	destroy(AppLog);
+	GC.collect();
 	return 0;
 }
