@@ -1,0 +1,8 @@
+name "kitsune-mahjong"
+description "OSS clone of Kyodai Mahjong, a Mahjong solitaire game."
+authors "Luna Nielsen"
+copyright "Copyright © 2020, Luna Nielsen"
+license "BSD 2-clause"
+dependency "bindbc-glfw" version="~>0.10.0"
+dependency "bindbc-opengl" version="~>0.13.0"
+dependency "bindbc-openal" version="~>0.4.1"
