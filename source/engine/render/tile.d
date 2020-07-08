@@ -27,10 +27,10 @@ enum MahjongTileLength = 0.26;
     - 9 Dots/Coins (1-9)
     - 9 Bams/Bamboos (1-9)
     - 9 Craks/Kanji (1-9)
-    - 3 Dragons (1-3, Red, Green, White)
-    - 4 Winds (1-4, East, South, West, North)
-    - 4 Flowers (1-4, Plum, Orchid, Bamboo and Chrysanthemum)
-    - 4 Seasons (1-4, Spring, Summer, Autmn, Winter)
+    - 3 Dragons (Red, Green, White)
+    - 4 Winds (East, South, West, North)
+    - 4 Flowers (Plum, Orchid, Bamboo and Chrysanthemum)
+    - 4 Seasons (Spring, Summer, Autumn, Winter)
     - Jokers
 
     Kitsune Mahjong on top has a few extra tiles special game boards may use for various purposes
