@@ -68,6 +68,13 @@ public:
     quat rotation;
 
     /**
+        Changes the transform's parent
+    */
+    void changeParent(Transform parent) {
+        this.parent = parent;
+    }
+
+    /**
         Gets the calculated matrix for this transform
     */
     mat4 matrix() {
@@ -88,15 +95,39 @@ private:
         return 
             mat4.zrotation(rotation) * 
             mat4.scaling(scale.x, scale.y, 1) * 
-            mat4.translation(position.x, position.y, 0);
+            mat4.translation(position.x, position.y, 0) * 
+            mat4.translation(origin.x, origin.y, 0);
     }
 
 public:
 
     /**
+        Create a new 2D transform
+    */
+    this(Transform2D parent = null) {
+        this(vec2(0, 0), vec2(0, 0), vec2(1, 1), parent);
+    }
+
+    /**
+        Create a new 2D transform
+    */
+    this(vec2 position, vec2 origin = vec2(0, 0), vec2 scale = vec2(1, 1), float rotation = 0, Transform2D parent = null) {
+        this.position = position;
+        this.origin = origin;
+        this.scale = scale;
+        this.rotation = rotation;
+        this.parent = parent;
+    }
+
+    /**
         Position of transform
     */
     vec2 position;
+    
+    /**
+        Position of the transform origin
+    */
+    vec2 origin;
 
     /**
         Scale of transform
@@ -109,9 +140,17 @@ public:
     float rotation;
 
     /**
+        Changes the transform's parent
+    */
+    void changeParent(Transform2D parent) {
+        this.parent = parent;
+    }
+
+    /**
         Gets the calculated matrix for this transform
     */
     mat4 matrix() {
+        if (parent is null) return g_matrix;
         return g_matrix*parent.matrix;
     }
 }
