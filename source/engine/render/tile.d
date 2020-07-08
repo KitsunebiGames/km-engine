@@ -174,9 +174,6 @@ enum TileType {
     /// 🀪
     Joker,
 
-    /// Count of tiles in base set
-    BaseSetTileCount,
-
     /// Red general purpose tile
     RedTile,
 
@@ -201,8 +198,22 @@ enum TileType {
     /// Mei general purpose tile
     FoxMei,
 
-    /// Count of tiles in extended set
-    ExtendedSetTileCount
+    /// Count of tiles in a set with only suits
+    SuitsCount = Crak9+1,
+
+    /// Count of tiles in a set with all bonus tiles
+    SuitsAndBonusCount = Joker+1,
+
+    /// Count of tiles in the extended set (Tiles added by Kitsune Mahjong)
+    ExtendedSetTileCount = FoxMei+1
+}
+
+/**
+    How many of a type of tile there usually is in a sec
+*/
+enum TileTypeCount {
+    Dots = 4,
+
 }
 
 /**
