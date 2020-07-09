@@ -53,7 +53,7 @@ public static:
     /**
         Gets if a mouse button is released
     */
-    bool isButtonPressed(MouseButton button) {
+    bool isButtonReleased(MouseButton button) {
         return glfwGetMouseButton(window, button) == GLFW_RELEASE;
     }
 }

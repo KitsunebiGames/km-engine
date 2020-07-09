@@ -4,7 +4,8 @@
     
     Authors: Luna Nielsen
 */
-module engine.render.piece;
+module engine.render.tile;
+import engine;
 
 /**
     Width of tile (A2 in cm)
@@ -219,25 +220,159 @@ enum TileTypeCount : int {
     Dragons = 4,
     Flowers = 1,
     Seasons = 1
-
 }
+
+private {
+    static Shader TileShader;
+    static GLint TileShaderMVP;
+    enum relWidth = MahjongTileWidth/2f;
+    enum relHeight = MahjongTileHeight/2f;
+    enum relLength = MahjongTileLength/2f;
+    static float[12*3*3] tileVerts;
+
+    bool tilePopulated;
+    void populateTile() {
+        tileVerts = [
+            // Front Face Tri 1
+            -relWidth, -relHeight, relLength,
+            relWidth, -relHeight, relLength,
+            -relWidth, relHeight, relLength,
+
+            // Front Face Tri 2
+            relWidth, -relHeight, relLength,
+            relWidth, relHeight, relLength,
+            -relWidth, relHeight, relLength,
+
+            // Top Face Tri 1
+            -relWidth, relHeight, relLength,
+            relWidth, relHeight, -relLength,
+            -relWidth, relHeight, -relLength,
+
+            // Top Face Tri 2
+            -relWidth, relHeight, relLength,
+            relWidth, relHeight, relLength,
+            relWidth, relHeight, -relLength,
+
+            // Back Face Tri 1
+            -relWidth, relHeight, -relLength,
+            relWidth, -relHeight, -relLength,
+            -relWidth, -relHeight, -relLength,
+
+            // Back Face Tri 2
+            -relWidth, relHeight, -relLength,
+            relWidth, relHeight, -relLength,
+            relWidth, -relHeight, -relLength,
+
+            // Bottom Face Tri 1
+            -relWidth, -relHeight, -relLength,
+            relWidth, -relHeight, -relLength,
+            -relWidth, -relHeight, relLength,
+
+            // Bottom Face Tri 2
+            relWidth, -relHeight, -relLength,
+            relWidth, -relHeight, relLength,
+            -relWidth, -relHeight, relLength,
+
+            // Left Face Tri 1
+            -relWidth, -relHeight, -relLength,
+            -relWidth, relHeight, relLength,
+            -relWidth, relHeight, -relLength,
+
+            // Left Face Tri 2
+            -relWidth, -relHeight, relLength,
+            -relWidth, relHeight, relLength,
+            -relWidth, -relHeight, -relLength,
+
+            // Right Face Tri 1
+            relWidth, relHeight, -relLength,
+            relWidth, relHeight, relLength,
+            relWidth, -relHeight, -relLength,
+
+            // Right Face Tri 2
+            relWidth, -relHeight, -relLength,
+            relWidth, relHeight, relLength,
+            relWidth, -relHeight, relLength,
+        ];
+    }
+}
+
 
 /**
     A mahjong tile
 */
 class Tile {
 private:
-    float[] verticies;
+
+    GLuint vao;
+    GLuint vbo;
+
     float[] uvs;
 
-    void genVerticies() {
-        verticies = [
+    void genBuffer() {
+        if (!tilePopulated) populateTile();
 
-        ];
+        glGenVertexArrays(1, &vao);
+        glBindVertexArray(vao);
 
-        
+        glGenBuffers(1, &vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glBufferData(GL_ARRAY_BUFFER, float.sizeof*tileVerts.length, tileVerts.ptr, GL_STATIC_DRAW);
     }
 
 public:
+    /**
+        The tile's transform
+    */
+    Transform transform;
 
+    /**
+        Construct a new tile
+    */
+    this(TileType type) {
+
+        // Generate OpenGL buffer
+        genBuffer();
+
+        // Load tile shader if needed
+        if (TileShader is null) {
+            TileShader = new Shader(import("shaders/tile.vert"), import("shaders/tile.frag"));
+            TileShader.use();
+            TileShaderMVP = TileShader.getUniformLocation("mvp");
+        }
+
+        // Make sure transform is assigned
+        transform = new Transform();
+    }
+
+    static void beginShading() {
+        // Prepare shader
+        TileShader.use();
+    }
+
+    /**
+        Draws the tile
+    */
+    void draw(Camera camera) {
+        TileShader.setUniform(TileShaderMVP, camera.matrix*transform.matrix);
+
+        glEnableVertexAttribArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glVertexAttribPointer(
+            0,
+            3,
+            GL_FLOAT,
+            GL_FALSE,
+            0,
+            null
+        );
+        glDrawArrays(GL_TRIANGLES, 0, cast(int)tileVerts.length);
+        glDisableVertexAttribArray(0);
+    }
+
+    /**
+        Draws the tile on UI
+    */
+    void drawInUI(UICamera camera) {
+
+    }
 }
