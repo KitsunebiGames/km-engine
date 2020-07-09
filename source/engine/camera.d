@@ -61,6 +61,6 @@ public:
     mat4 matrix() {
         return 
             mat4.orthographic(0f, cast(float)GameWindow.width, cast(float)GameWindow.height, 0, 0, 10) * 
-            mat4.translation(position.x, position.y, 0);
+            mat4.translation(position.x, position.y, -5);
     }
 }

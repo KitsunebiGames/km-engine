@@ -16,7 +16,7 @@ private:
 
     // Generated matrix
     mat4 g_matrix() {
-        return rotation.to_matrix!(4, 4) * mat4.scaling(scale.x, scale.y, scale.z) * mat4.translation(position);
+        return mat4.translation(position) * rotation.to_matrix!(4, 4) * mat4.scaling(scale.x, scale.y, scale.z);
     }
 
 public:
@@ -105,7 +105,7 @@ public:
         Create a new 2D transform
     */
     this(Transform2D parent = null) {
-        this(vec2(0, 0), vec2(0, 0), vec2(1, 1), parent);
+        this(vec2(0, 0), vec2(0, 0), vec2(1, 1), 0, parent);
     }
 
     /**
