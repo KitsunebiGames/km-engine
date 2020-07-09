@@ -8,12 +8,15 @@ module game.gamestate.intro;
 import game.gamestate;
 import engine;
 import game;
-import std.format;
+import gl3n.linalg;
+
 
 /**
     Main menu state
 */
 class IntroState : GameState {
+private:
+
 public:
     /**
         No passthrough
@@ -27,10 +30,11 @@ override:
     }
 
     void draw() {
-
     }
 
     void onActivate() {
+
+        // Set window title
         GameWindow.title = "Welcome to Kitsune Mahjong";
     }
 }
