@@ -6,6 +6,7 @@
 */
 module engine.window;
 import bindbc.glfw;
+import bindbc.opengl;
 
 /**
     Static instance of the game window
@@ -137,6 +138,13 @@ public:
     */
     void setSwapInterval(SwapInterval interval = SwapInterval.VSync) {
         glfwSwapInterval(cast(int)interval);
+    }
+
+    /**
+        Resets the OpenGL viewport to fit the window
+    */
+    void resetViewport() {
+        glViewport(0, 0, width, height);
     }
 
     /**
