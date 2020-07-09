@@ -23,7 +23,7 @@ void initGame() {
 
     // Set window title to something better
     GameWindow.title = "Kitsune Mahjong";
-    GameWindow.setSwapInterval(SwapInterval.Unlimited);
+    GameWindow.setSwapInterval(SwapInterval.VSync);
 
     // Push the main menu to the stack
     GameStateManager.push(new IntroState());
@@ -34,6 +34,7 @@ void initGame() {
 */
 void gameLoop() {
     resetTime();
+    GameWindow.update();
     while(!GameWindow.isExitRequested) {
 
         currentTime_ = glfwGetTime();
@@ -41,17 +42,18 @@ void gameLoop() {
         previousTime_ = currentTime_;
         
         // Clear color and depth buffers
-        glClear(GL_COLOR_BUFFER_BIT);
-        glClear(GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // Reset OpenGL viewport
+        GameWindow.resetViewport();
 
         // Update and render the game
         GameStateManager.update();
         GameStateManager.draw();
 
-        // Swap buffers and poll stuff
+        // Swap buffers and update the window
         GameWindow.swapBuffers();
-        GameWindow.pollEvents();
-
+        GameWindow.update();
     }
 }
 

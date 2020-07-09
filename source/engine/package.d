@@ -9,6 +9,8 @@ public import engine.log;
 public import engine.window;
 public import engine.input;
 public import engine.render;
+public import engine.transform;
+public import engine.camera;
 
 import bindbc.glfw;
 

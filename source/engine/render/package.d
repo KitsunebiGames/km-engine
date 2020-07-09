@@ -4,5 +4,6 @@
     
     Authors: Luna Nielsen
 */
-module engine.gl;
+module engine.render;
 public import bindbc.opengl;
+public import engine.render.shader;
