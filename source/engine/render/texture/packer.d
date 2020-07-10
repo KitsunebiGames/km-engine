@@ -11,7 +11,7 @@ import std.exception;
 /++
     Node used in generating a texture.
 +/
-struct FNode {
+private struct FNode {
     this(vec2i origin, vec2i size) {
         this.origin = origin;
         this.size = size;
@@ -37,23 +37,16 @@ struct FNode {
 }
 
 /++
-    Packing algorithm implementation
+    Texture packer for fixed-size textures
 +/
 class TexturePacker {
+private:
+
     /// Size of texture so far
     vec2i textureSize;
 
-    /// The output buffer
-    ubyte[] buffer;
-
     /// The root node for the packing
     FNode* root;
-
-    this() {
-        root = new FNode(vec2i(0, 0), vec2i(int.max, int.max));
-        textureSize = vec2i(1024, 1024);
-        buffer = new ubyte[](1024*1024);
-    }
 
     /++
         Packing algorithm
@@ -117,43 +110,33 @@ class TexturePacker {
         }
     }
 
-    void resizeBuffer(vec2i newSize) {
-        ubyte[] newBuffer = new ubyte[](newSize.x*newSize.y);
-        foreach(y; 0..textureSize.y) {
-            foreach(x; 0..textureSize.x) {
-                newBuffer[y * newSize.x + x] = buffer[y * textureSize.x + x];
-            }
-        }
+public:
 
-        textureSize = newSize;
-        buffer = newBuffer;
+    /**
+        Max size of texture packer
+    */
+    this(vec2i textureSize = vec2i(1024, 1024)) {
+        this.textureSize = textureSize;
+        this.clear();
     }
 
     /++
-        Pack a texture
-
-        Returns the position that the texture can be found at.
+        Get a packing position for the texture
     +/
     vec2i packTexture(ubyte[] textureBuffer, vec2i size) {
         FNode* node = pack(root, size);
-        if (node == null) {
-            this.resizeBuffer(vec2i(textureSize.x*2, textureSize.y*2));
-            node = pack(root, size);
-
-            enforce(node !is null, "Was unable to pack texture!");
-        }
+        enforce(node !is null, "Texture does not fit in atlas!");
 
         enforce(size.x == node.size.x, "Sizes did not match! This is as bug in the texture packer.");
         enforce(size.y == node.size.y, "Sizes did not match! This is as bug in the texture packer.");
 
-        foreach (ly; 0..size.y) {
-            foreach(lx; 0..size.x) {
-                int y = cast(int)node.origin.y + cast(int)ly;
-                int x = cast(int)node.origin.x + cast(int)lx;
-                this.buffer[y * textureSize.x + x] = textureBuffer[ly * size.x + lx];
-            }
-        }
-
         return node.origin;
+    }
+
+    /**
+        Wipes all nodes from the packer
+    */
+    void clear() {
+        this.root = new FNode(vec2i(0, 0), vec2i(int.max, int.max));
     }
 }
