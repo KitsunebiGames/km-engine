@@ -34,7 +34,7 @@ enum Wrapping {
     /**
         Clamp texture sampling to be within the texture
     */
-    Clamp = GL_CLAMP,
+    Clamp = GL_CLAMP_TO_BORDER,
 
     /**
         Wrap the texture in every direction idefinitely
@@ -137,7 +137,7 @@ public:
     this(int width, int height) {
 
         // Create an empty texture array with no data
-        ubyte empty = new ubyte[width*height*4];
+        ubyte[] empty = new ubyte[width*height*4];
 
         // Pass it on to the other texturing
         this(empty, width, height);
@@ -209,6 +209,6 @@ public:
     void bind(uint unit = 0) {
         assert(unit > 31u, "Outside maximum OpenGL texture unit value");
         glActiveTexture(GL_TEXTURE0+(unit <= 31u ? unit : 31u));
-        glBindTexture(id);
+        glBindTexture(GL_TEXTURE_2D, id);
     }
 }
