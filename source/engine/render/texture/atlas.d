@@ -9,6 +9,7 @@ import engine.render.texture;
 import gl3n.linalg;
 import std.exception;
 import std.format;
+import engine;
 
 /**
     The game's static texture atlas collection
@@ -65,22 +66,26 @@ public:
     void add(string name, ShallowTexture shallowTexture, size_t atlas=0) {
         enforce(name !in texTable, "Texture with name '%s' is already in the atlas collection".format(name));
 
-        // We know what this exception is, try an other atlas
+        // Add new atlas
         if (atlas >= atlasses.length) {
+            AppLog.info("AtlasCollection", "All atlases were out of space, creating new atlas %s...", atlasses.length);
             atlasses ~= new TextureAtlas(vec2i(4096, 4096));
         }
 
-        // Try adding to atlas
-        try {
-            // Add to atlas and get uvs
-            vec4 uvs = atlasses[atlas].add(name, shallowTexture);
+        // Add to atlas and get uvs
+        vec4 uvs = atlasses[atlas].add(name, shallowTexture);
 
-            // Put the texture and its uvs in to the table
-            texTable[name] = AtlasIndex(atlasses[atlas], uvs);
+        // Height is 0 if it couldn't fit
+        if (uvs.w == 0) {
 
-        } catch (Exception ex) {
+            // Try the next atlas
             add(name, shallowTexture, atlas+1);
+            return;
         }
+
+        // Put the texture and its uvs in to the table
+        texTable[name] = AtlasIndex(atlasses[atlas], uvs);
+
     }
 }
 
@@ -131,11 +136,15 @@ public:
         enforce(name !in entries, "Texture with name '%s' is already in the atlas".format(name));
 
         // Get packing position of texture
-        vec2i texpos = packer.packTexture(shallowTexture.data, vec2i(shallowTexture.width, shallowTexture.height));
+        vec4i texpos = packer.packTexture(vec2i(shallowTexture.width, shallowTexture.height));
+
+        // Texture does not fit in this atlas.
+        if (texpos.w == 0) return vec4(0, 0, 0, 0);
 
         // Put it in to the texture and set its entry
         texture.setDataRegion(shallowTexture.data, texpos.x, texpos.y, shallowTexture.width, shallowTexture.height);
 
+        AppLog.info("debug", "Packed texture %s in to region (%s, %s, %s, %s)", name, texpos.x, texpos.y, shallowTexture.width, shallowTexture.height);
 
         // Calculate UV coordinates and put them in to the table
         vec2 texSize = vec2(cast(float)texture.width, cast(float)texture.height);
