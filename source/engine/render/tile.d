@@ -10,7 +10,7 @@ import engine;
 /**
     Width of tile (A2 in cm)
 */
-enum MahjongTileWidth = 0.20;
+enum MahjongTileWidth = 0.26;
 
 /**
     Height of tile (A2 in cm)
@@ -20,7 +20,7 @@ enum MahjongTileHeight = 0.35;
 /**
     Length/Depth of tile (A2 in cm)
 */
-enum MahjongTileLength = 0.26;
+enum MahjongTileLength = 0.20;
 
 /**
     Types of tiles in a Mahjong set
