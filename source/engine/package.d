@@ -33,9 +33,13 @@ void initEngine() {
     initOGL();
     AppLog.info("Engine", "OpenGL initialized...");
 
-    // Initialzie input
+    // Initialize input
     initInput(GameWindow.winPtr);
     AppLog.info("Engine", "Input system initialized...");
+
+    // Initialize atlasser
+    GameAtlas = new AtlasCollection();
+    AppLog.info("Engine", "Texture atlassing initialized...");
 }
 
 /**
