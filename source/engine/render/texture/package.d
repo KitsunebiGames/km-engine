@@ -100,8 +100,8 @@ public:
 class Texture {
 private:
     GLuint id;
-    int width;
-    int height;
+    int width_;
+    int height_;
 
 public:
 
@@ -137,7 +137,7 @@ public:
     this(int width, int height) {
 
         // Create an empty texture array with no data
-        ubyte[] empty = new ubyte[width*height*4];
+        ubyte[] empty = new ubyte[width_*height_*4];
 
         // Pass it on to the other texturing
         this(empty, width, height);
@@ -146,9 +146,9 @@ public:
     /**
         Creates a new texture from specified data
     */
-    this(ubyte[] data, int width, int height) {
-        this.width = width;
-        this.height = height;
+    this(ubyte[] data, int width_, int height_) {
+        this.width_ = width;
+        this.height_ = height;
         
         // Generate OpenGL texture
         glGenTextures(1, &id);
@@ -157,6 +157,20 @@ public:
         // Set default filtering and wrapping
         this.setFiltering(Filtering.Point);
         this.setWrapping(Wrapping.Clamp);
+    }
+
+    /**
+        Width of texture
+    */
+    int width() {
+        return width_;
+    }
+
+    /**
+        Height of texture
+    */
+    int height() {
+        return height_;
     }
 
     /**
@@ -182,7 +196,7 @@ public:
     */
     void setData(ubyte[] data) {
         this.bind();
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data.ptr);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_, height_, 0, GL_RGBA, GL_UNSIGNED_BYTE, data.ptr);
     }
 
     /**
@@ -192,8 +206,8 @@ public:
         this.bind();
 
         // Make sure we don't try to change the texture in an out of bounds area.
-        enforce( x >= 0 && x+width < this.width, "x offset is out of bounds");
-        enforce( y >= 0 && y+height < this.height, "y offset is out of bounds");
+        enforce( x >= 0 && x+width < this.width_, "x offset is out of bounds");
+        enforce( y >= 0 && y+height < this.height_, "y offset is out of bounds");
 
         // Update the texture
         glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data.ptr);

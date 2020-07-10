@@ -11,24 +11,13 @@ import std.exception;
 import std.format;
 
 /**
-    A collection of texture atlases
-*/
-class AtlasCollection {
-private:
-    TextureAtlas[] atlases;
-
-public:
-
-}
-
-/**
     A texture atlas
 */
 class TextureAtlas {
 private:
     Texture texture;
     TexturePacker packer;
-    vec4i[string] entries;
+    vec4[string] entries;
 
 public:
 
@@ -41,12 +30,11 @@ public:
     }
 
     /**
-        Gets the UVs for the index
+        Gets the UV points for the index
     */
-    vec4i opIndex(string name) {
+    vec4 opIndex(string name) {
         return entries[name];
     }
-
     /**
         Bind the atlas texture
     */
@@ -72,6 +60,22 @@ public:
 
         // Put it in to the texture and set its entry
         texture.setDataRegion(shallowTexture.data, texpos.x, texpos.y, shallowTexture.width, shallowTexture.height);
-        entries[name] = vec4i(texpos.x, texpos.y, shallowTexture.width, shallowTexture.height);
+
+
+        // Calculate UV coordinates and put them in to the table
+        vec2 texSize = vec2(cast(float)texture.width, cast(float)texture.height);
+        vec4 uvPoints = vec4(
+            (cast(float)texpos.x)/texSize.x,
+            (cast(float)texpos.y)/texSize.y, 
+            (cast(float)texpos.x+shallowTexture.width)/texSize.x, 
+            (cast(float)texpos.y+shallowTexture.height)/texSize.y
+        );
+
+        // Adjust UV points to avoid oversampling
+        uvPoints.x += 0.2/texSize.x;
+        uvPoints.y += 0.2/texSize.y;
+        uvPoints.z -= 0.2/texSize.x;
+        uvPoints.w -= 0.2/texSize.y;
+        entries[name] = uvPoints;
     }
 }
