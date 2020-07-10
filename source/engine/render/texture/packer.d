@@ -6,109 +6,216 @@
 */
 module engine.render.texture.packer;
 import gl3n.linalg;
+import gl3n.math;
 import std.exception;
+import engine.core.log;
+import std.format;
+import std.algorithm.mutation : remove;
 
-/++
-    Node used in generating a texture.
-+/
-private struct FNode {
-    this(vec2i origin, vec2i size) {
-        this.origin = origin;
-        this.size = size;
-        this.empty = true;
-        this.left = null;
-        this.right = null;
-    }
-
-    /// Origin of texture
-    vec2i origin;
-    
-    /// Size of texture
-    vec2i size;
-
-    /// Wether the node is taken
-    bool empty = true;
-
-    /// Node branch left
-    FNode* left;
-
-    /// Node branch right
-    FNode* right;
+private bool contains(vec4i a, vec4i b) {
+    return  a.x >= b.x && 
+            a.y >= b.y &&
+            a.x+a.z <= b.x+b.z &&
+            a.y+a.w <= b.y+b.w;
 }
 
-/++
-    Texture packer for fixed-size textures
-+/
-class TexturePacker {
+/**
+    A bin
+*/
+private struct Bin {
 private:
+    vec2i size;
+    vec4i[] usedRectangles;
+    vec4i[] freeRectangles;
 
-    /// Size of texture so far
-    vec2i textureSize;
+    vec4i scoreRect(vec2i size, out int score1, out int score2) {
+        vec4i newNode;
 
-    /// The root node for the packing
-    FNode* root;
+        // Find the best place to put the rectangle
+        score1 = int.max;
+        score2 = int.max;
+        newNode = findNewNodeFit(size, score1, score2);
 
-    /++
-        Packing algorithm
+        // reset score
+        if (newNode.w == 0) {
+            score1 = int.max;
+            score2 = int.max;
+        }
+        return newNode;
+    }
 
-        Based on the packing algorithm from straypixels.net
-        https://straypixels.net/texture-packing-for-fonts/
-    +/
-    FNode* pack(FNode* node, vec2i size) {
-        if (!node.empty) {
-            return null;
-        } else if (node.left !is null && node.right !is null) {
-            FNode* rval = pack(node.left, size);
-            return rval !is null ? rval : pack(node.right, size);
-        } else {
-            vec2i realSize = vec2i(node.size.x, node.size.y);
+    vec4i scoreRect(vec2i size) {
+        vec4i newNode;
 
-            // Calculate actual size if on boundary
-            if (node.origin.x + node.size.x == int.max) {
-                realSize.x = textureSize.x-node.origin.x;
+        // Find the best place to put the rectangle
+        int score1 = int.max;
+        int score2 = int.max;
+        newNode = findNewNodeFit(size, score1, score2);
+
+        return newNode;
+    }
+
+    void place(ref vec4i newNode) {
+
+        // Rectangles to process
+        size_t rectanglesToProcess = freeRectangles.length;
+
+        // Run through all rectangles
+        for(int i; i < rectanglesToProcess; ++i) {
+
+            // Try splitting them up
+            if (splitFree(freeRectangles[i], newNode)) {
+                freeRectangles.remove(i);
+                --i;
+                --rectanglesToProcess;
             }
-            if (node.origin.y + node.size.y == int.max) {
-                realSize.y = textureSize.x-node.origin.y;
-            }
+        }
 
+        prune();
+        usedRectangles ~= newNode;
+    }
+    
+    vec4i findNewNodeFit(vec2i size, int score1, int score2) {
+        vec4i bestNode = vec4i(0, 0, 0, 0);
+
+        int bestShortFit = int.max;
+        int bestLongFit = int.max;
+
+        foreach(freeRect; freeRectangles) {
             
-            if (node.size.x == size.x && node.size.y == size.y) {
-                // Size is perfect, pack here
-                node.empty = false;
-                return node;
+            // Try placing the rectangle in upright orientation
+            if (freeRect.z >= size.x && freeRect.w >= size.y) {
+                int leftoverH = abs(freeRect.z - size.x);
+                int leftoverV = abs(freeRect.w - size.y);
+                int shortSideFit = min(leftoverH, leftoverV);
+                int longSideFit = max(leftoverH, leftoverV);
+
+                if (shortSideFit < bestShortFit || (shortSideFit == bestShortFit && longSideFit < bestLongFit)) {
+                    bestNode.x = freeRect.x;
+                    bestNode.y = freeRect.y;
+                    bestNode.z = size.x;
+                    bestNode.w = size.y;
+                    bestShortFit = shortSideFit;
+                    bestLongFit = longSideFit;
+                }
+            }
+        }
+
+        return bestNode;
+    }
+
+    bool splitFree(vec4i freeNode, ref vec4i usedNode) {
+        if (usedNode.x >= freeNode.x + freeNode.z || usedNode.x + usedNode.z <= freeNode.x ||
+            usedNode.y >= freeNode.y + freeNode.w || usedNode.y + usedNode.w <= freeNode.y) 
+            return false;
+
+        // Vertical Splitting
+        if (usedNode.x < freeNode.x + freeNode.z && usedNode.x + usedNode.z > freeNode.x) {
+
+            // New node at top of used
+            if (usedNode.y > freeNode.y && usedNode.y < freeNode.y + freeNode.w) {
+                vec4i newNode = freeNode;
+                newNode.w = usedNode.y - newNode.y;
+                freeRectangles ~= newNode;
             }
 
-            // Not big enough?
-            if (realSize.x < size.x || realSize.y < size.y) {
-                return null;
+            // New node at bottom of used
+            if (usedNode.y + usedNode.w < freeNode.y + freeNode.w) {
+                vec4i newNode = freeNode;
+                newNode.y = usedNode.y + usedNode.w;
+                newNode.w = freeNode.y + freeNode.w - (usedNode.y + usedNode.w);
+                freeRectangles ~= newNode;
+            }
+        }
+
+        // Horizontal Splitting
+        if (usedNode.y < freeNode.y + freeNode.z && usedNode.y + usedNode.z > freeNode.y) {
+
+            // New node at left of used
+            if (usedNode.x > freeNode.x && usedNode.x < freeNode.x + freeNode.z) {
+                vec4i newNode = freeNode;
+                newNode.z = usedNode.x - newNode.x;
+                freeRectangles ~= newNode;
             }
 
-            FNode* left;
-            FNode* right;
-
-            vec2i remain = vec2i(realSize.x - size.x, realSize.y - size.y);
-            bool vsplit = remain.x < remain.y;
-            if (remain.x == 0 && remain.y == 0) {
-                // Edgecase, hitting border of texture atlas perfectly, split at border instead
-                if (node.size.x > node.size.y) vsplit = false;
-                else vsplit = true;
+            // New node at right of used
+            if (usedNode.x + usedNode.z < freeNode.x + freeNode.z) {
+                vec4i newNode = freeNode;
+                newNode.x = usedNode.x + usedNode.z;
+                newNode.z = freeNode.x + freeNode.z - (usedNode.x + usedNode.z);
+                freeRectangles ~= newNode;
             }
+        }
+        return true;
+    }
 
-            if (vsplit) {
-                left = new FNode(node.origin, vec2i(node.size.x, size.y));
-                right = new FNode(  vec2i(node.origin.x, node.origin.y + size.y), 
-                                    vec2i(node.size.x, node.size.y - size.y));
-            } else {
-                left = new FNode(node.origin, vec2i(size.x, node.size.y));
-                right = new FNode(  vec2i(node.origin.x + size.x, node.origin.y), 
-                                    vec2i(node.size.x - size.x, node.size.y));
+    void prune() {
+        for(int i; i < freeRectangles.length; ++i) {
+            for(int j = i+1; j < freeRectangles.length; ++j) {
+
+
+                if (freeRectangles[i].contains(freeRectangles[j])) {
+                    freeRectangles = freeRectangles.remove(i);
+                    --i;
+                    break;
+                }
+
+                if (freeRectangles[j].contains(freeRectangles[i])) {
+                    freeRectangles = freeRectangles.remove(j);
+                    --j;
+                }
             }
-
-            node.left = left;
-            node.right = right;
-            return pack(node.left, size);
         }
     }
+
+public:
+    this(vec2i size) {
+        this.size = size;
+        freeRectangles = [vec4i(0, 0, size.x, size.y)];
+    }
+
+    /**
+        Inserts a new rectangle in to the bin
+    */
+    vec4i insert(vec2i size) {
+        int score1;
+        int score2;
+        vec4i newNode = scoreRect(size, score1, score2);
+
+        // Place rectangle in to bin
+        place(newNode);
+        return newNode;
+    }
+
+    /**
+        Removes the area from the packing
+    */
+    void remove(vec4i area) {
+        foreach(i, rect; usedRectangles) {
+            if (rect == area) {
+                usedRectangles = usedRectangles.remove(i);
+                break;
+            }
+        }
+        freeRectangles ~= area;
+    }
+
+    /**
+        Gets ratio of surface area used
+    */
+    float occupancy() {
+        ulong surfaceArea = 0;
+        foreach(rect; usedRectangles) {
+            surfaceArea += rect.z*rect.w;
+        }
+        return surfaceArea / (size.x*size.y);
+    }
+}
+
+
+class TexturePacker {
+private:
+    Bin bin;
 
 public:
 
@@ -116,27 +223,16 @@ public:
         Max size of texture packer
     */
     this(vec2i textureSize = vec2i(1024, 1024)) {
-        this.textureSize = textureSize;
-        this.clear();
-    }
-
-    /++
-        Get a packing position for the texture
-    +/
-    vec2i packTexture(ubyte[] textureBuffer, vec2i size) {
-        FNode* node = pack(root, size);
-        enforce(node !is null, "Texture does not fit in atlas!");
-
-        enforce(size.x == node.size.x, "Sizes did not match! This is as bug in the texture packer.");
-        enforce(size.y == node.size.y, "Sizes did not match! This is as bug in the texture packer.");
-
-        return node.origin;
+        bin = Bin(textureSize);
     }
 
     /**
-        Wipes all nodes from the packer
+        Packs a texture in to the bin
     */
-    void clear() {
-        this.root = new FNode(vec2i(0, 0), vec2i(int.max, int.max));
+    vec4i packTexture(vec2i size) {
+        vec4i pack = bin.insert(size);
+
+        enforce(pack.w > 0, "Could not fit texture");
+        return pack;
     }
 }
