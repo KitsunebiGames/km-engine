@@ -11,6 +11,7 @@ import bindbc.opengl;
 import std.exception;
 import imagefmt;
 import std.format;
+import engine;
 
 /**
     Filtering mode for texture
@@ -91,7 +92,7 @@ public:
 
         // Set the width/height data
         this.width = image.w;
-        this.height = image.w;
+        this.height = image.h;
     }
 }
 
