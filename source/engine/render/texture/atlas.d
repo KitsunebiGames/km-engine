@@ -67,7 +67,7 @@ public:
 
         // We know what this exception is, try an other atlas
         if (atlas >= atlasses.length) {
-            atlasses ~= new TextureAtlas(vec2(4096, 4096));
+            atlasses ~= new TextureAtlas(vec2i(4096, 4096));
         }
 
         // Try adding to atlas
