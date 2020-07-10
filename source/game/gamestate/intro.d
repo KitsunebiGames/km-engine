@@ -21,7 +21,13 @@ private:
     Camera testCamera;
     Tile[] tiles;
     Transform cameraRoot;
+    Transform cameraGimbalX;
     float rtest = 0;
+
+    vec2 startRot;
+    vec2 rot;
+    vec2 dragStart;
+    bool dragging;
 
 public:
     /**
@@ -30,7 +36,9 @@ public:
     this() {
         this.drawPassthrough = false;
         cameraRoot = new Transform();
-        testCamera = new Camera(new Transform(vec3(0, 0, -4), cameraRoot));
+        cameraGimbalX = new Transform(cameraRoot);
+        testCamera = new Camera(new Transform(vec3(0, 0, -4), cameraGimbalX));
+        rot = vec2(0, 0);
         
         enum sz = 100;
 
@@ -38,8 +46,8 @@ public:
             foreach(x; 0..sz) {
                 auto tile = new Tile(TileType.Dot1);
                 
-                float xp = cast(float)(x-(sz/2))/3.5;
-                float yp = cast(float)(y-(sz/2))/2.5;
+                float xp = (MahjongTileWidth+0.1)*cast(float)(x-(sz/2));
+                float yp = (MahjongTileHeight+0.1)*cast(float)(y-(sz/2));
 
                 tile.transform.position = vec3(xp, yp, 0);
                 tiles ~= tile;
@@ -50,7 +58,38 @@ public:
 override:
     void update() {
         rtest += deltaTime+0.001;
-        //cameraRoot.rotation = quat.euler_rotation(sin(rtest*2)/2, rtest, cos(rtest*2)/2);
+
+        if (Mouse.isButtonPressed(MouseButton.Middle)) {
+            if (!dragging) {
+                dragging = true;
+                dragStart = Mouse.position;
+                startRot = rot;
+            }
+
+            vec2 dragOffset = dragStart-Mouse.position;
+            rot.x = startRot.x-dragOffset.x/GameWindow.width;
+            rot.y = startRot.y+dragOffset.y/GameWindow.height;
+
+            cameraRoot.rotation = quat.zrotation(rot.x);
+            cameraGimbalX.rotation = quat.xrotation(rot.y);
+        }
+
+        if (Keyboard.isKeyPressed(Key.KeyA)) {
+            cameraRoot.position.x += deltaTime*1;
+        }
+        if (Keyboard.isKeyPressed(Key.KeyD)) {
+            cameraRoot.position.x -= deltaTime*1;
+        }
+        if (Keyboard.isKeyPressed(Key.KeyW)) {
+            cameraRoot.position.y -= deltaTime*1;
+        }
+        if (Keyboard.isKeyPressed(Key.KeyS)) {
+            cameraRoot.position.y += deltaTime*1;
+        }
+
+        if (Mouse.isButtonReleased(MouseButton.Middle)) {
+            dragging = false;
+        }
     }
 
     void draw() {
@@ -59,7 +98,7 @@ override:
         Tile.beginShading();
         foreach(i, tile; tiles) {
             float scaleVal = sin(rtest+i)/2;
-            tile.transform.scale = vec3(1+scaleVal, 1+scaleVal, 1+scaleVal);
+            //tile.transform.scale = vec3(1+scaleVal, 1+scaleVal, 1+scaleVal);
             tile.draw(testCamera);
         }
         GameWindow.title = "%sms drawing %s tiles".format(cast(int)(deltaTime*1000), tiles.length);

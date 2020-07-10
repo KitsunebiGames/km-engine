@@ -4,7 +4,7 @@
     
     Authors: Luna Nielsen
 */
-module engine.window;
+module engine.core.window;
 import bindbc.glfw;
 import bindbc.opengl;
 

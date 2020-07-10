@@ -4,7 +4,7 @@
     
     Authors: Luna Nielsen
 */
-module engine.log;
+module engine.core.log;
 import std.stdio;
 import std.file;
 import std.format;
