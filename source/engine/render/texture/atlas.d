@@ -65,6 +65,11 @@ public:
     void add(string name, ShallowTexture shallowTexture, size_t atlas=0) {
         enforce(name !in texTable, "Texture with name '%s' is already in the atlas collection".format(name));
 
+        // We know what this exception is, try an other atlas
+        if (atlas >= atlasses.length) {
+            atlasses ~= new TextureAtlas(vec2(4096, 4096));
+        }
+
         // Try adding to atlas
         try {
             // Add to atlas and get uvs
@@ -74,11 +79,7 @@ public:
             texTable[name] = AtlasIndex(atlasses[atlas], uvs);
 
         } catch (Exception ex) {
-            // We know what this exception is, try an other atlas
-            if (atlas+1 >= atlasses.length) {
-                atlasses ~= new TextureAtlas(vec2(4096, 4096));
-            }
-            atlasses[atlas+1];
+            add(name, shallowTexture, atlas+1);
         }
     }
 }
