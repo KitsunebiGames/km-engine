@@ -55,6 +55,13 @@ public:
     }
 
     /**
+        Add texture to the atlas from a file
+    */
+    void add(string name, string file) {
+        add(name, ShallowTexture(file));
+    }
+
+    /**
         Add texture to the atlas
     */
     void add(string name, ShallowTexture shallowTexture) {
