@@ -9,6 +9,8 @@ public import engine.core;
 public import engine.input;
 public import engine.render;
 public import engine.math;
+public import engine.audio;
+public import engine.net;
 
 import bindbc.glfw;
 
