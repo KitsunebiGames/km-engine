@@ -9,6 +9,7 @@ public import engine.render.texture.packer;
 public import engine.render.texture.atlas;
 import bindbc.opengl;
 import std.exception;
+import imagefmt;
 
 /**
     Filtering mode for texture
@@ -47,6 +48,53 @@ enum Wrapping {
 }
 
 /**
+    A texture which is not bound to an OpenGL context
+
+    Used for texture atlassing
+*/
+struct ShallowTexture {
+public:
+    /**
+        8-bit RGBA color data
+    */
+    ubyte[] data;
+
+    /**
+        Width of texture
+    */
+    int width;
+
+    /**
+        Height of texture
+    */
+    int height;
+
+    /**
+        Loads a shallow texture from image file
+        Supported file types:
+        * PNG 8-bit
+        * BMP 8-bit
+        * TGA 8-bit non-palleted
+        * JPEG baseline
+    */
+    this(string file) {
+
+        // Load image from disk, as RGBA 8-bit
+        IFImage image = read_image(file, 4, 8);
+        enforce( image.e == 0, IF_ERROR[image.e]);
+        scope(exit) image.free();
+
+        // Copy data from IFImage to this ShallowTexture
+        this.data = new ubyte[image.buf8.length];
+        this.data[] = image.buf8;
+
+        // Set the width/height data
+        this.width = image.w;
+        this.height = image.w;
+    }
+}
+
+/**
     A texture, only format supported is unsigned 8 bit RGBA
 */
 class Texture {
@@ -56,8 +104,47 @@ private:
     int height;
 
 public:
+
     /**
-        Creates a new texture
+        Loads texture from image file
+        Supported file types:
+        * PNG 8-bit
+        * BMP 8-bit
+        * TGA 8-bit non-palleted
+        * JPEG baseline
+    */
+    this(string file) {
+
+        // Load image from disk, as RGBA 8-bit
+        IFImage image = read_image(file, 4, 8);
+        enforce( image.e == 0, IF_ERROR[image.e]);
+        scope(exit) image.free();
+
+        // Load in image data to OpenGL
+        this(image.buf8, image.w, image.h);
+    }
+
+    /**
+        Creates a texture from a ShallowTexture
+    */
+    this(ShallowTexture shallow) {
+        this(shallow.data, shallow.width, shallow.height);
+    }
+
+    /**
+        Creates a new empty texture
+    */
+    this(int width, int height) {
+
+        // Create an empty texture array with no data
+        ubyte empty = new ubyte[width*height*4];
+
+        // Pass it on to the other texturing
+        this(empty, width, height);
+    }
+
+    /**
+        Creates a new texture from specified data
     */
     this(ubyte[] data, int width, int height) {
         this.width = width;
