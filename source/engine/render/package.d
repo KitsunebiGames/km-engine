@@ -8,3 +8,4 @@ module engine.render;
 public import bindbc.opengl;
 public import engine.render.shader;
 public import engine.render.tile;
+public import engine.render.texture;
