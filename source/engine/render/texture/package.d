@@ -10,6 +10,7 @@ public import engine.render.texture.atlas;
 import bindbc.opengl;
 import std.exception;
 import imagefmt;
+import std.format;
 
 /**
     Filtering mode for texture
@@ -146,7 +147,7 @@ public:
     /**
         Creates a new texture from specified data
     */
-    this(ubyte[] data, int width_, int height_) {
+    this(ubyte[] data, int width, int height) {
         this.width_ = width;
         this.height_ = height;
         
@@ -197,6 +198,7 @@ public:
     void setData(ubyte[] data) {
         this.bind();
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_, height_, 0, GL_RGBA, GL_UNSIGNED_BYTE, data.ptr);
+        glGenerateMipmap(GL_TEXTURE_2D);
     }
 
     /**
@@ -206,11 +208,12 @@ public:
         this.bind();
 
         // Make sure we don't try to change the texture in an out of bounds area.
-        enforce( x >= 0 && x+width < this.width_, "x offset is out of bounds");
-        enforce( y >= 0 && y+height < this.height_, "y offset is out of bounds");
+        enforce( x >= 0 && x+width <= this.width_, "x offset is out of bounds (xoffset=%s, xbound=%s)".format(x+width, this.width_));
+        enforce( y >= 0 && y+height <= this.height_, "y offset is out of bounds (yoffset=%s, ybound=%s)".format(y+height, this.height_));
 
         // Update the texture
         glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data.ptr);
+        glGenerateMipmap(GL_TEXTURE_2D);
     }
 
     /**
@@ -221,7 +224,7 @@ public:
         - In debug mode unit values over 31 will assert.
     */
     void bind(uint unit = 0) {
-        assert(unit > 31u, "Outside maximum OpenGL texture unit value");
+        assert(unit <= 31u, "Outside maximum OpenGL texture unit value");
         glActiveTexture(GL_TEXTURE0+(unit <= 31u ? unit : 31u));
         glBindTexture(GL_TEXTURE_2D, id);
     }

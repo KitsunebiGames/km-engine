@@ -11,6 +11,79 @@ import std.exception;
 import std.format;
 
 /**
+    The game's static texture atlas collection
+*/
+static AtlasCollection GameAtlas;
+
+/**
+    An index in the atlas collection
+    
+    It is safe to keep this value around for caching
+*/
+struct AtlasIndex {
+private:
+    TextureAtlas parentAtlas;
+
+public:
+    /**
+        The UV points of the texture
+    */
+    vec4 uv;
+
+    /**
+        Bind the atlas texture
+    */
+    void bind(uint unit = 0) {
+        parentAtlas.bind(unit);
+    }
+}
+
+/***/
+class AtlasCollection {
+private:
+    TextureAtlas[] atlasses;
+    AtlasIndex[string] texTable;
+
+public:
+    /**
+        Gets the uv and atlas pointer for the index
+    */
+    AtlasIndex opIndex(string name) {
+        return texTable[name];
+    }
+
+    /**
+        Add texture to the atlas from a file
+    */
+    void add(string name, string file, size_t atlas=0) {
+        add(name, ShallowTexture(file), atlas);
+    }
+
+    /**
+        Add texture to the atlas collection
+    */
+    void add(string name, ShallowTexture shallowTexture, size_t atlas=0) {
+        enforce(name !in texTable, "Texture with name '%s' is already in the atlas collection".format(name));
+
+        // Try adding to atlas
+        try {
+            // Add to atlas and get uvs
+            vec4 uvs = atlasses[atlas].add(name, shallowTexture);
+
+            // Put the texture and its uvs in to the table
+            texTable[name] = AtlasIndex(atlasses[atlas], uvs);
+
+        } catch (Exception ex) {
+            // We know what this exception is, try an other atlas
+            if (atlas+1 >= atlasses.length) {
+                atlasses ~= new TextureAtlas(vec2(4096, 4096));
+            }
+            atlasses[atlas+1];
+        }
+    }
+}
+
+/**
     A texture atlas
 */
 class TextureAtlas {
@@ -35,6 +108,7 @@ public:
     vec4 opIndex(string name) {
         return entries[name];
     }
+
     /**
         Bind the atlas texture
     */
@@ -52,7 +126,7 @@ public:
     /**
         Add texture to the atlas
     */
-    void add(string name, ShallowTexture shallowTexture) {
+    vec4 add(string name, ShallowTexture shallowTexture) {
         enforce(name !in entries, "Texture with name '%s' is already in the atlas".format(name));
 
         // Get packing position of texture
@@ -77,5 +151,6 @@ public:
         uvPoints.z -= 0.2/texSize.x;
         uvPoints.w -= 0.2/texSize.y;
         entries[name] = uvPoints;
+        return uvPoints;
     }
 }
