@@ -228,11 +228,10 @@ public:
 
     /**
         Packs a texture in to the bin
+
+        Returns a vec4i(0, 0, 0, 0) on packing failure
     */
     vec4i packTexture(vec2i size) {
-        vec4i pack = bin.insert(size);
-
-        enforce(pack.w > 0, "Could not fit texture");
-        return pack;
+        return bin.insert(size);
     }
 }
