@@ -201,8 +201,13 @@ public:
 
     /**
         Bind this texture
+        
+        Notes
+        - In release mode the unit value is clamped to 31 (The max OpenGL texture unit value)
+        - In debug mode unit values over 31 will assert.
     */
     void bind(uint unit = 0) {
+        assert(unit > 31u, "Outside maximum OpenGL texture unit value");
         glActiveTexture(GL_TEXTURE0+(unit <= 31u ? unit : 31u));
         glBindTexture(id);
     }
