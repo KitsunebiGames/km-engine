@@ -4,7 +4,7 @@
     
     Authors: Luna Nielsen
 */
-module engine.core.net;
+module engine.net;
 
 /*
     TODO: Implement core net-code which the game can utilize here.
