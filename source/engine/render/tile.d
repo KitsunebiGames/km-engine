@@ -233,9 +233,14 @@ private {
     enum relHeight = MahjongTileHeight/2f;
     enum relLength = MahjongTileLength/2f;
     static float[12*3*3] tileVerts;
+    static GLuint tileVBO;
+    GLuint vao;
 
     bool tilePopulated;
     void initTile() {
+
+        glGenVertexArrays(1, &vao);
+        glBindVertexArray(vao);
 
         // Populate verticies
         tileVerts = [
@@ -300,6 +305,10 @@ private {
             relWidth, -relHeight, relLength,
         ];
 
+        glGenBuffers(1, &tileVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, tileVBO);
+        glBufferData(GL_ARRAY_BUFFER, float.sizeof*tileVerts.length, tileVerts.ptr, GL_STATIC_DRAW);
+
         // TODO: size the atlas based on the size of tiles
         tileAtlas = new TextureAtlas(vec2i(2048, 2048));
     }
@@ -338,25 +347,17 @@ private:
 
     TileType type;
 
-    GLuint vao;
-    GLuint[2] vbos;
+    GLuint uvVBO;
 
     float[12*2*3] uvs;
 
     void genBuffer() {
 
-        vbos = [0u, 0u];
-
-        glGenVertexArrays(1, &vao);
-        glBindVertexArray(vao);
-
-        glGenBuffers(2, vbos.ptr);
-        glBindBuffer(GL_ARRAY_BUFFER, vbos[0]);
-        glBufferData(GL_ARRAY_BUFFER, float.sizeof*tileVerts.length, tileVerts.ptr, GL_STATIC_DRAW);
-
+        glGenBuffers(1, &uvVBO);
         genUVs();
-        glBindBuffer(GL_ARRAY_BUFFER, vbos[1]);
+        glBindBuffer(GL_ARRAY_BUFFER, uvVBO);
         glBufferData(GL_ARRAY_BUFFER, float.sizeof*uvs.length, uvs.ptr, GL_STATIC_DRAW);
+
     }
 
     void genUVs() {
@@ -462,17 +463,10 @@ public:
         // Prepare shader
         TileShader.use();
         tileAtlas.bind();
-    }
-
-    /**
-        Draws the tile
-    */
-    void draw(Camera camera) {
-        TileShader.setUniform(TileShaderMVP, camera.matrix*transform.matrix);
 
         // Vertex Buffer
         glEnableVertexAttribArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, vbos[0]);
+        glBindBuffer(GL_ARRAY_BUFFER, tileVBO);
         glVertexAttribPointer(
             0,
             3,
@@ -482,9 +476,22 @@ public:
             null
         );
 
-        // UVs
         glEnableVertexAttribArray(1);
-        glBindBuffer(GL_ARRAY_BUFFER, vbos[1]);
+    }
+
+    static void end() {
+        glDisableVertexAttribArray(0);
+        glDisableVertexAttribArray(1);
+    }
+
+    /**
+        Draws the tile
+    */
+    void draw(Camera camera) {
+        TileShader.setUniform(TileShaderMVP, camera.matrix*transform.matrix);
+
+        // UVs
+        glBindBuffer(GL_ARRAY_BUFFER, uvVBO);
         glVertexAttribPointer(
             1,
             2,
@@ -494,14 +501,12 @@ public:
             null
         );
         glDrawArrays(GL_TRIANGLES, 0, cast(int)tileVerts.length);
-        glDisableVertexAttribArray(0);
-        glDisableVertexAttribArray(1);
     }
 
     /**
         Draws the tile on UI
     */
-    void drawInUI(UICamera camera) {
+    void drawInUI(Camera2D camera) {
 
     }
 }
