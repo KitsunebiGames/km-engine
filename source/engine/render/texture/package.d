@@ -157,7 +157,7 @@ public:
         this.setData(data);
 
         // Set default filtering and wrapping
-        this.setFiltering(Filtering.Point);
+        this.setFiltering(Filtering.Linear);
         this.setWrapping(Wrapping.Clamp);
     }
 

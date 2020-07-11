@@ -316,7 +316,7 @@ private {
         glBufferData(GL_ARRAY_BUFFER, float.sizeof*tileVerts.length, tileVerts.ptr, GL_STATIC_DRAW);
     }
 
-    void loadTileset(string tilesetName="debug") {
+    void loadTileset(string tilesetName="default") {
 
         // TODO: size the atlas based on the size of tiles
         tileAtlas = new TextureAtlas(vec2i(2048, 2048));
@@ -334,13 +334,15 @@ private {
             try {
 
                 // Try to add the tile, throw exception if we're out of space
-                vec4 area = tileAtlas.add("Tile%s".format(name), path);
-                enforce(area.w >= 0, "Out of space in texture atlas!");
+                AtlasArea area = tileAtlas.add("Tile%s".format(name), path);
+                enforce(area.uv.isFinite, "Out of space in texture atlas!");
 
             } catch(Exception ex) {
                 AppLog.fatal("Tile", "%s: %s", ex.msg, path);
             }
         }
+
+        tileAtlas.setFiltering(Filtering.Linear);
     }
 }
 
@@ -351,10 +353,8 @@ private {
 class Tile {
 private:
 
-    TileType type;
-
+    TileType type_;
     GLuint uvVBO;
-
     float[12*2*3] uvs;
 
     void genBuffer() {
@@ -367,10 +367,10 @@ private:
     }
 
     void genUVs() {
-        vec4 frontFace = tileAtlas["Tile%s".format(to!string(type))];
-        vec4 backFace = tileAtlas["TileBack"];
-        vec4 capFace = tileAtlas["TileCap"];
-        vec4 sideFace = tileAtlas["TileSide"];
+        vec4 frontFace = tileAtlas["Tile%s".format(to!string(type_))].uv;
+        vec4 backFace = tileAtlas["TileBack"].uv;
+        vec4 capFace = tileAtlas["TileCap"].uv;
+        vec4 sideFace = tileAtlas["TileSide"].uv;
         uvs = [
             // Front Face
             frontFace.x, frontFace.w,
@@ -434,6 +434,11 @@ public:
     */
     Transform transform;
 
+    /**
+        The tile's collider
+    */
+    OBB collider;
+
     ~this() {
         glDeleteBuffers(1, &uvVBO);
     }
@@ -441,8 +446,8 @@ public:
     /**
         Construct a new tile
     */
-    this(TileType type) {
-        this.type = type;
+    this(TileType type_) {
+        this.type_ = type_;
 
         // Populate tile atlas if needed
         if (tileAtlas is null) {
@@ -462,6 +467,22 @@ public:
 
         // Make sure transform is assigned
         transform = new Transform();
+    }
+
+    /**
+        Gets the type of the tile
+    */
+    TileType type() {
+        return type_;
+    }
+
+    /**
+        Updates the collider
+    */
+    void updateCollider() {
+        collider.position = transform.position;
+        collider.size = vec3(MahjongTileWidth/2, MahjongTileHeight/2, MahjongTileLength/2);
+        collider.rotation = transform.rotation;
     }
 
     /**
