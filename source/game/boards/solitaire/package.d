@@ -5,17 +5,39 @@
     Authors: Luna Nielsen
 */
 module game.boards.solitaire;
+import game.boards.solitaire.field;
 import game.boards;
+import engine;
+import game;
+import std.random;
 
+
+
+/**
+    Solitaire Board
+*/
 class SolitaireBoard : GameBoard {
+private:
+    Field playingField;
+
+    BoardCam camera;
+    Camera2D ui;
+
 public:
+    this() {
+        playingField = new Field();
+
+        ui = new Camera2D();
+        camera = new BoardCam();
+    }
 
 override:
-    void update() {
 
+    void update() {
+        camera.update();
     }
 
     void draw() {
-        
+        playingField.draw(camera.camera);
     }
 }

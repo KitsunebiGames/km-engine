@@ -15,10 +15,17 @@ class Camera {
 private:
 
     mat4 g_matrix() {
-        return mat4.perspective(GameWindow.width, GameWindow.height, 90, 0.001, 100) * transform.matrix;
+        return mat4.perspective(GameWindow.width, GameWindow.height, fov, 0.001, 100) * transform.matrix;
     }
 
 public:
+
+    this() {
+        
+    }
+
+    float fov = 90;
+
     /**
         Transform of the position of the camera
     */
@@ -63,8 +70,9 @@ public:
         Matrix for this camera
     */
     mat4 matrix() {
+        int largestSize = max(GameWindow.width, GameWindow.height);
         return 
-            mat4.orthographic(0f, cast(float)GameWindow.width, cast(float)GameWindow.height, 0, 0, 10) * 
-            mat4.translation(position.x, position.y, -5);
+            mat4.orthographic(0f, cast(float)GameWindow.width, cast(float)GameWindow.height, 0, 0, largestSize) * 
+            mat4.translation(position.x, position.y, -10);
     }
 }

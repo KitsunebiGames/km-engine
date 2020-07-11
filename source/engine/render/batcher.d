@@ -116,6 +116,10 @@ public:
         Flush the buffer
     */
     void flush() {
+
+        // Disable depth testing for the batcher
+        glDisable(GL_DEPTH_TEST);
+
         // Don't draw empty textures
         if (currentTexture is null) return;
 
@@ -175,5 +179,8 @@ public:
         currentTexture = null;
         dataOffset = 0;
         tris = 0;
+
+        // Re-enable depth test Clear depth buffer
+        glEnable(GL_DEPTH_TEST);
     }
 }

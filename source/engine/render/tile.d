@@ -26,6 +26,11 @@ enum MahjongTileHeight = 0.35;
 enum MahjongTileLength = 0.20;
 
 /**
+    Scaling factor for a mahjong tile's width to be 1 pixel wide
+*/
+enum MahjongScaleFactor = 1/MahjongTileWidth;
+
+/**
     Types of tiles in a Mahjong set
     A set consists of:
     - 9 Dots/Coins (1-9)
@@ -509,7 +514,24 @@ public:
     /**
         Draws the tile on UI
     */
-    void drawInUI(Camera2D camera) {
+    void drawInUI(Camera2D camera, vec2 position, float scale = 1, quat rotation = quat.identity) {
+        TileShader.setUniform(TileShaderMVP, 
+            camera.matrix *
+            mat4.translation(position.x, position.y, -((MahjongTileLength*MahjongScaleFactor)*scale)) * 
+            rotation.to_matrix!(4, 4) *
+            mat4.scaling(scale*MahjongScaleFactor, -(scale*MahjongScaleFactor), scale*MahjongScaleFactor)
+        );
 
+        // UVs
+        glBindBuffer(GL_ARRAY_BUFFER, uvVBO);
+        glVertexAttribPointer(
+            1,
+            2,
+            GL_FLOAT,
+            GL_FALSE,
+            0,
+            null
+        );
+        glDrawArrays(GL_TRIANGLES, 0, cast(int)tileVerts.length);
     }
 }
