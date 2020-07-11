@@ -5,7 +5,6 @@
     Authors: Luna Nielsen
 */
 #version 330
-in vec3 vertPos;
 in vec2 texUVs;
 out vec4 outColor;
 
