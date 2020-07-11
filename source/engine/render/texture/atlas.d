@@ -125,8 +125,8 @@ public:
     /**
         Add texture to the atlas from a file
     */
-    void add(string name, string file) {
-        add(name, ShallowTexture(file));
+    vec4 add(string name, string file) {
+        return add(name, ShallowTexture(file));
     }
 
     /**
