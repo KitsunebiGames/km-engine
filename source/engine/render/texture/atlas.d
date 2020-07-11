@@ -25,11 +25,21 @@ struct AtlasIndex {
 private:
     TextureAtlas parentAtlas;
 
+package(engine.render):
+    Texture texture() {
+        return parentAtlas.texture;
+    }
+
 public:
     /**
         The UV points of the texture
     */
     vec4 uv;
+
+    /**
+        The area of the texture in the atlas
+    */
+    vec4 area;
 
     /**
         Bind the atlas texture
@@ -54,6 +64,13 @@ public:
     }
 
     /**
+        Gets whether the atlas has the specified name
+    */
+    bool has(string name) {
+        return (name in texTable) !is null;
+    }
+
+    /**
         Add texture to the atlas from a file
     */
     void add(string name, string file, size_t atlas=0) {
@@ -73,10 +90,10 @@ public:
         }
 
         // Add to atlas and get uvs
-        vec4 uvs = atlasses[atlas].add(name, shallowTexture);
+        AtlasArea area = atlasses[atlas].add(name, shallowTexture);
 
         // Height is 0 if it couldn't fit
-        if (uvs.w == 0) {
+        if (!area.area.isFinite) {
 
             // Try the next atlas
             add(name, shallowTexture, atlas+1);
@@ -84,19 +101,36 @@ public:
         }
 
         // Put the texture and its uvs in to the table
-        texTable[name] = AtlasIndex(atlasses[atlas], uvs);
+        texTable[name] = AtlasIndex(atlasses[atlas], area.uv, area.area);
 
     }
+}
+
+/**
+    An area in a texture atlas
+*/
+struct AtlasArea {
+    /**
+        The area in pixels
+    */
+    vec4 area;
+
+    /**
+        The UV coordinates
+    */
+    vec4 uv;
 }
 
 /**
     A texture atlas
 */
 class TextureAtlas {
-private:
+package(engine.render):
     Texture texture;
+
+private:
     TexturePacker packer;
-    vec4[string] entries;
+    AtlasArea[string] entries;
 
 public:
 
@@ -111,7 +145,7 @@ public:
     /**
         Gets the UV points for the index
     */
-    vec4 opIndex(string name) {
+    AtlasArea opIndex(string name) {
         return entries[name];
     }
 
@@ -123,23 +157,30 @@ public:
     }
 
     /**
+        Set filtering used for the texture
+    */
+    void setFiltering(Filtering filtering) {
+        texture.setFiltering(filtering);
+    }
+
+    /**
         Add texture to the atlas from a file
     */
-    vec4 add(string name, string file) {
+    AtlasArea add(string name, string file) {
         return add(name, ShallowTexture(file));
     }
 
     /**
         Add texture to the atlas
     */
-    vec4 add(string name, ShallowTexture shallowTexture) {
+    AtlasArea add(string name, ShallowTexture shallowTexture) {
         enforce(name !in entries, "Texture with name '%s' is already in the atlas".format(name));
 
         // Get packing position of texture
         vec4i texpos = packer.packTexture(vec2i(shallowTexture.width, shallowTexture.height));
 
         // Texture does not fit in this atlas.
-        if (texpos.w == 0) return vec4(0, 0, 0, 0);
+        if (!texpos.isFinite) return AtlasArea(vec4.init, vec4.init);
 
         // Put it in to the texture and set its entry
         texture.setDataRegion(shallowTexture.data, texpos.x, texpos.y, shallowTexture.width, shallowTexture.height);
@@ -150,19 +191,26 @@ public:
 
         // Calculate UV coordinates and put them in to the table
         vec2 texSize = vec2(cast(float)texture.width, cast(float)texture.height);
+        vec4 texArea = vec4(
+            texpos.x, 
+            texpos.y, 
+            shallowTexture.width,
+            shallowTexture.height
+        );
+
         vec4 uvPoints = vec4(
-            (cast(float)texpos.x)/texSize.x,
-            (cast(float)texpos.y)/texSize.y, 
-            (cast(float)texpos.x+shallowTexture.width)/texSize.x, 
-            (cast(float)texpos.y+shallowTexture.height)/texSize.y
+            texArea.x/texSize.x,
+            texArea.y/texSize.y, 
+            (texArea.x+texArea.z)/texSize.x, 
+            (texArea.y+texArea.w)/texSize.y
         );
 
         // Adjust UV points to avoid oversampling
-        uvPoints.x += 0.2/texSize.x;
-        uvPoints.y += 0.2/texSize.y;
-        uvPoints.z -= 0.2/texSize.x;
-        uvPoints.w -= 0.2/texSize.y;
-        entries[name] = uvPoints;
-        return uvPoints;
+        uvPoints.x += 0.25/texSize.x;
+        uvPoints.y += 0.25/texSize.y;
+        uvPoints.z -= 0.25/texSize.x;
+        uvPoints.w -= 0.25/texSize.y;
+        entries[name] = AtlasArea(texArea, uvPoints);
+        return entries[name];
     }
 }

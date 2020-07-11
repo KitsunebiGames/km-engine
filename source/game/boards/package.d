@@ -46,7 +46,7 @@ public:
         camera = new Camera(cameraArm);
 
         // TODO: make these customizable
-        cameraArm.position.z = -10;
+        cameraArm.position.z = -8;
         camera.fov = 30;
     }
 

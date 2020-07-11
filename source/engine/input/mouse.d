@@ -25,6 +25,8 @@ class Mouse {
 private static:
     GLFWwindow* window;
 
+    bool[MouseButton] lastState;
+
 public static:
 
     /**
@@ -55,5 +57,28 @@ public static:
     */
     bool isButtonReleased(MouseButton button) {
         return glfwGetMouseButton(window, button) == GLFW_RELEASE;
+    }
+
+    /**
+        Gets whether the button was clicked
+    */
+    bool isButtonClicked(MouseButton button) {
+        return !lastState[button] && isButtonPressed(button);
+    }
+
+    /**
+        Gets whether the button was clicked
+    */
+    bool isButtonUnclicked(MouseButton button) {
+        return lastState[button] && isButtonReleased(button);
+    }
+
+    /**
+        Updates the mouse state for single-clicking
+    */
+    void update() {
+        lastState[MouseButton.Left] = glfwGetMouseButton(window, MouseButton.Left) == GLFW_PRESS;
+        lastState[MouseButton.Middle] = glfwGetMouseButton(window, MouseButton.Middle) == GLFW_PRESS;
+        lastState[MouseButton.Right] = glfwGetMouseButton(window, MouseButton.Right) == GLFW_PRESS;
     }
 }

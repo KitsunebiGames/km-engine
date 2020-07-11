@@ -8,6 +8,22 @@ module game.boards.solitaire.tilegen;
 import engine;
 import game;
 import std.random;
+import std.conv;
+
+/**
+    Generation mode
+*/
+enum GenMode {
+    /**
+        Randomly selects the next tile to be generated
+    */
+    Random,
+
+    /**
+        Cycles over the tiles in the roster
+    */
+    Cycles
+}
 
 /**
     Generates tiles for Solitaire Mahjong
@@ -22,12 +38,16 @@ private:
     int[TileType] generatedCount;
     int genIndex;
 
-    void setNextType() {
+    void setNextType(GenMode mode) {
         TileType newType;
 
         bool valid = true;
         do {
-            newType = cast(TileType)uniform(0, TileType.SuitsAndBonusCount-1);
+            if (mode == GenMode.Random) {
+                newType = cast(TileType)uniform(0, TileType.SuitsAndBonusCount-1);
+            } else {
+                newType = cast(TileType)((cast(int)currentType+1)%(TileType.SuitsAndBonusCount-1));
+            }
             if (newType !in generatedCount) break;
 
             int counter = 0;
@@ -45,6 +65,10 @@ private:
 
             // If it's not a valid use set valid to false.
             if(generatedCount[newType] >= counter) valid = false;
+
+            if (!valid) {
+                AppLog.info("debug", "%s already exists too much", to!string(newType));
+            }
         } while (!valid);
 
         // Update the type
@@ -69,7 +93,7 @@ public:
             Tile nextTile = new Tile(currentType);
             generatedCount[currentType]++;
 
-            setNextType();
+            setNextType(GenMode.Cycles);
             genIndex = 0;
             return nextTile;
         }

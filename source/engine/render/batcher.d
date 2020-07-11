@@ -55,6 +55,9 @@ private:
 
 public:
 
+    /**
+        Constructor
+    */
     this() {
         data = new float[DataSize*EntryCount];
 
@@ -68,6 +71,21 @@ public:
         batchCamera = new Camera2D();
         spriteBatchShader = new Shader(import("shaders/batch.vert"), import("shaders/batch.frag"));
         vp = spriteBatchShader.getUniformLocation("vp");
+    }
+
+    /**
+        Draws texture from atlas
+    */
+    void draw(string item, vec4 position, vec2 origin = vec2(0, 0), float rotation = 0f, vec4 color = vec4(1, 1, 1, 1)) {
+        auto index = GameAtlas[item];
+        draw(index, position, origin, rotation, color);
+    }
+
+    /**
+        Draws cached atlas index
+    */
+    void draw(AtlasIndex index, vec4 position, vec2 origin = vec2(0, 0), float rotation = 0f, vec4 color = vec4(1, 1, 1, 1)) {
+        draw(index.texture, position, index.area, origin, rotation, color);
     }
 
     /**
@@ -99,15 +117,22 @@ public:
             cutout = vec4(0, 0, texture.width, texture.height);
         }
 
+        vec4 uvArea = vec4(
+            (cutout.x)+0.8,
+            (cutout.y)+0.8,
+            (cutout.x+cutout.z)-1.5,
+            (cutout.y+cutout.w)-1.5,
+        );
+
         // Triangle 1
-        addVertexData(vec2(0, 1).transformVerts(transform), vec2(cutout.x, cutout.y+cutout.w), color);
-        addVertexData(vec2(1, 0).transformVerts(transform), vec2(cutout.x+cutout.z, cutout.y), color);
-        addVertexData(vec2(0, 0).transformVerts(transform), vec2(cutout.x, cutout.y), color);
+        addVertexData(vec2(0, 1).transformVerts(transform), vec2(uvArea.x, uvArea.w), color);
+        addVertexData(vec2(1, 0).transformVerts(transform), vec2(uvArea.z, uvArea.y), color);
+        addVertexData(vec2(0, 0).transformVerts(transform), vec2(uvArea.x, uvArea.y), color);
         
         // Triangle 2
-        addVertexData(vec2(0, 1).transformVerts(transform), vec2(cutout.x, cutout.y+cutout.w), color);
-        addVertexData(vec2(1, 1).transformVerts(transform), vec2(cutout.x+cutout.z, cutout.y+cutout.w), color);
-        addVertexData(vec2(1, 0).transformVerts(transform), vec2(cutout.x+cutout.z, cutout.y), color);
+        addVertexData(vec2(0, 1).transformVerts(transform), vec2(uvArea.x, uvArea.w), color);
+        addVertexData(vec2(1, 1).transformVerts(transform), vec2(uvArea.z, uvArea.w), color);
+        addVertexData(vec2(1, 0).transformVerts(transform), vec2(uvArea.z, uvArea.y), color);
 
         tris += 2;
     }

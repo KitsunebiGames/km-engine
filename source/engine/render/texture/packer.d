@@ -76,7 +76,7 @@ private:
     }
     
     vec4i findNewNodeFit(vec2i size, int score1, int score2) {
-        vec4i bestNode = vec4i(0, 0, 0, 0);
+        vec4i bestNode = vec4i.init;
 
         int bestShortFit = int.max;
         int bestLongFit = int.max;

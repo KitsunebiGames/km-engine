@@ -9,6 +9,7 @@ import game.gamestate;
 import game.boards;
 import engine;
 import game;
+import game.june;
 
 /**
     The game state of ingame
@@ -17,12 +18,7 @@ class InGameState : GameState {
 private:
     GameBoard board;
     string targetGame;
-
     Texture background;
-
-    Texture june;
-    vec2 juneScale;
-    float time = 0;
 
 
     void drawBackground() {
@@ -78,17 +74,20 @@ public:
         // TODO: actually use targetGame
 
         this.board = new SolitaireBoard();
-        june = new Texture("assets/textures/june/junesmile.png");
-        june.setFiltering(Filtering.Linear);
-        juneScale = vec2(june.width/5, june.height/5);
-
         background = new Texture("assets/textures/backgrounds/forest.jpg");
+
+        june = new June();
     }
+
+    /**
+        It's june!
+    */
+    June june;
 
     override void update() {
         this.board.update();
 
-        time += deltaTime*1;
+        june.update();
     }
 
     override void draw() {
@@ -99,9 +98,8 @@ public:
         // Draw board
         this.board.draw();
 
-        // Draw June
-        GameBatch.draw(june, vec4(GameWindow.width-(juneScale.x/4), (GameWindow.height+64)-(sin(time)*4), juneScale.x, juneScale.y), vec4.init, vec2(juneScale.x/2, juneScale.y));
-        GameBatch.flush();
+        // Draw june
+        june.draw(vec2(GameWindow.width-64, GameWindow.height));
     }
 
     override void onActivate() {

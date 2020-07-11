@@ -48,6 +48,9 @@ void gameLoop() {
         GameStateManager.update();
         GameStateManager.draw();
 
+        // Update the mouse's state
+        Mouse.update();
+
         // Swap buffers and update the window
         GameWindow.swapBuffers();
         GameWindow.update();
