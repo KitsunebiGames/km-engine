@@ -8,6 +8,7 @@ module engine.render.tile;
 import engine;
 import std.conv;
 import std.exception;
+import std.format : format;
 
 /**
     Width of tile (A2 in cm)
@@ -308,13 +309,13 @@ private {
         glGenBuffers(1, &tileVBO);
         glBindBuffer(GL_ARRAY_BUFFER, tileVBO);
         glBufferData(GL_ARRAY_BUFFER, float.sizeof*tileVerts.length, tileVerts.ptr, GL_STATIC_DRAW);
-
-        // TODO: size the atlas based on the size of tiles
-        tileAtlas = new TextureAtlas(vec2i(2048, 2048));
     }
 
     void loadTileset(string tilesetName="debug") {
-        import std.format : format;
+
+        // TODO: size the atlas based on the size of tiles
+        tileAtlas = new TextureAtlas(vec2i(2048, 2048));
+
         import std.conv : to;
         import std.path : buildPath;
 
@@ -361,8 +362,6 @@ private:
     }
 
     void genUVs() {
-        import std.format : format;
-        AppLog.info("debug", "Using Tile%s for UVs...", to!string(type));
         vec4 frontFace = tileAtlas["Tile%s".format(to!string(type))];
         vec4 backFace = tileAtlas["TileBack"];
         vec4 capFace = tileAtlas["TileCap"];
@@ -429,6 +428,10 @@ public:
         The tile's transform
     */
     Transform transform;
+
+    ~this() {
+        glDeleteBuffers(1, &uvVBO);
+    }
 
     /**
         Construct a new tile
