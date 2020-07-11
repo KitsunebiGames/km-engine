@@ -9,7 +9,7 @@ kitsune-mahjong.dll
 kitsune-mahjong.a
 kitsune-mahjong.lib
 kitsune-mahjong-test-*
-kitsune-mahjong.zip
+*.zip
 *.exe
 *.o
 *.obj
