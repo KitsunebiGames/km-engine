@@ -44,11 +44,15 @@ public:
 
     TODO: extend camera as needed
 */
-class UICamera {
+class Camera2D {
 private:
     mat4 projection;
 
 public:
+
+    this() {
+        position = vec2(0, 0);
+    }
 
     /**
         Position of camera
