@@ -6,9 +6,11 @@
 */
 #version 330
 in vec3 vertPos;
+in vec2 texUVs;
 out vec4 outColor;
 
-void main() {
+uniform sampler2D tex;
 
-    outColor = vec4(vertPos.xyz+0.5, 1);
+void main() {
+    outColor = texture(tex, texUVs);
 }

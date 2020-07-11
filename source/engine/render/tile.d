@@ -6,6 +6,8 @@
 */
 module engine.render.tile;
 import engine;
+import std.conv;
+import std.exception;
 
 /**
     Width of tile (A2 in cm)
@@ -167,7 +169,7 @@ enum TileType : int {
     Summer,
 
     /// 🀨
-    Autmn,
+    Autumn,
 
     /// 🀩
     Winter,
@@ -176,28 +178,28 @@ enum TileType : int {
     Joker,
 
     /// Red general purpose tile
-    RedTile,
+    Red,
 
     /// Green general purpose tile
-    GreenTile,
+    Green,
 
     /// Blue general purpose tile
-    BlueTile,
+    Blue,
 
     /// Orange general purpose tile
-    OrangeTile,
+    Orange,
 
     /// Pink general purpose tile
-    PinkTile,
+    Pink,
 
     /// June general purpose tile
-    FoxJune,
+    June,
 
     /// April general purpose tile
-    FoxApril,
+    April,
 
     /// Mei general purpose tile
-    FoxMei,
+    Mei,
 
     /// Count of tiles in a set with only suits
     SuitsCount = Crak9+1,
@@ -206,7 +208,7 @@ enum TileType : int {
     SuitsAndBonusCount = Joker+1,
 
     /// Count of tiles in the extended set (Tiles added by Kitsune Mahjong)
-    ExtendedSetTileCount = FoxMei+1
+    ExtendedSetTileCount = Mei+1
 }
 
 /**
@@ -223,6 +225,8 @@ enum TileTypeCount : int {
 }
 
 private {
+    static TextureAtlas tileAtlas;
+
     static Shader TileShader;
     static GLint TileShaderMVP;
     enum relWidth = MahjongTileWidth/2f;
@@ -231,7 +235,9 @@ private {
     static float[12*3*3] tileVerts;
 
     bool tilePopulated;
-    void populateTile() {
+    void initTile() {
+
+        // Populate verticies
         tileVerts = [
             // Front Face Tri 1
             -relWidth, -relHeight, relLength,
@@ -293,6 +299,33 @@ private {
             relWidth, relHeight, relLength,
             relWidth, -relHeight, relLength,
         ];
+
+        // TODO: size the atlas based on the size of tiles
+        tileAtlas = new TextureAtlas(vec2i(2048, 2048));
+    }
+
+    void loadTileset(string tilesetName="debug") {
+        import std.format : format;
+        import std.conv : to;
+        import std.path : buildPath;
+
+        tileAtlas.add("TileCap", buildPath("assets", "tiles", tilesetName, "TileCap.png"));
+        tileAtlas.add("TileSide", buildPath("assets", "tiles", tilesetName, "TileSide.png"));
+        tileAtlas.add("TileBack", buildPath("assets", "tiles", tilesetName, "TileBack.png"));
+        
+        foreach(i; 0..cast(int)TileType.ExtendedSetTileCount) {
+            string name = to!string(cast(TileType)i);
+            string path = buildPath("assets", "tiles", tilesetName, "Tile%s.png".format(name));
+            try {
+
+                // Try to add the tile, throw exception if we're out of space
+                vec4 area = tileAtlas.add("Tile%s".format(name), path);
+                enforce(area.w >= 0, "Out of space in texture atlas!");
+
+            } catch(Exception ex) {
+                AppLog.fatal("Tile", "%s: %s", ex.msg, path);
+            }
+        }
     }
 }
 
@@ -303,20 +336,91 @@ private {
 class Tile {
 private:
 
-    GLuint vao;
-    GLuint vbo;
+    TileType type;
 
-    float[] uvs;
+    GLuint vao;
+    GLuint[2] vbos;
+
+    float[12*2*3] uvs;
 
     void genBuffer() {
-        if (!tilePopulated) populateTile();
+
+        vbos = [0u, 0u];
 
         glGenVertexArrays(1, &vao);
         glBindVertexArray(vao);
 
-        glGenBuffers(1, &vbo);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glGenBuffers(2, vbos.ptr);
+        glBindBuffer(GL_ARRAY_BUFFER, vbos[0]);
         glBufferData(GL_ARRAY_BUFFER, float.sizeof*tileVerts.length, tileVerts.ptr, GL_STATIC_DRAW);
+
+        genUVs();
+        glBindBuffer(GL_ARRAY_BUFFER, vbos[1]);
+        glBufferData(GL_ARRAY_BUFFER, float.sizeof*uvs.length, uvs.ptr, GL_STATIC_DRAW);
+    }
+
+    void genUVs() {
+        import std.format : format;
+        AppLog.info("debug", "Using Tile%s for UVs...", to!string(type));
+        vec4 frontFace = tileAtlas["Tile%s".format(to!string(type))];
+        vec4 backFace = tileAtlas["TileBack"];
+        vec4 capFace = tileAtlas["TileCap"];
+        vec4 sideFace = tileAtlas["TileSide"];
+        uvs = [
+            // Front Face
+            frontFace.x, frontFace.w,
+            frontFace.z, frontFace.w,
+            frontFace.x, frontFace.y,
+            
+            frontFace.z, frontFace.w,
+            frontFace.z, frontFace.y,
+            frontFace.x, frontFace.y,
+
+            // Top Face
+            capFace.x, capFace.w,
+            capFace.z, capFace.w,
+            capFace.x, capFace.y,
+            
+            capFace.z, capFace.w,
+            capFace.z, capFace.y,
+            capFace.x, capFace.y,
+
+            // Back Face
+            backFace.x, backFace.w,
+            backFace.z, backFace.w,
+            backFace.x, backFace.y,
+            
+            backFace.z, backFace.w,
+            backFace.z, backFace.y,
+            backFace.x, backFace.y,
+
+            // Bottom Face
+            capFace.x, capFace.w,
+            capFace.z, capFace.w,
+            capFace.x, capFace.y,
+            
+            capFace.z, capFace.w,
+            capFace.z, capFace.y,
+            capFace.x, capFace.y,
+
+            // Left Face
+            sideFace.x, sideFace.w,
+            sideFace.z, sideFace.w,
+            sideFace.x, sideFace.y,
+            
+            sideFace.z, sideFace.w,
+            sideFace.z, sideFace.y,
+            sideFace.x, sideFace.y,
+
+            // Right Face
+            sideFace.x, sideFace.w,
+            sideFace.z, sideFace.w,
+            sideFace.x, sideFace.y,
+            
+            sideFace.z, sideFace.w,
+            sideFace.z, sideFace.y,
+            sideFace.x, sideFace.y,
+        ];
     }
 
 public:
@@ -329,6 +433,13 @@ public:
         Construct a new tile
     */
     this(TileType type) {
+        this.type = type;
+
+        // Populate tile atlas if needed
+        if (tileAtlas is null) {
+            initTile();
+            loadTileset();
+        }
 
         // Generate OpenGL buffer
         genBuffer();
@@ -344,9 +455,13 @@ public:
         transform = new Transform();
     }
 
-    static void beginShading() {
+    /**
+        Begins drawing tiles
+    */
+    static void begin() {
         // Prepare shader
         TileShader.use();
+        tileAtlas.bind();
     }
 
     /**
@@ -355,8 +470,9 @@ public:
     void draw(Camera camera) {
         TileShader.setUniform(TileShaderMVP, camera.matrix*transform.matrix);
 
+        // Vertex Buffer
         glEnableVertexAttribArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, vbos[0]);
         glVertexAttribPointer(
             0,
             3,
@@ -365,8 +481,21 @@ public:
             0,
             null
         );
+
+        // UVs
+        glEnableVertexAttribArray(1);
+        glBindBuffer(GL_ARRAY_BUFFER, vbos[1]);
+        glVertexAttribPointer(
+            1,
+            2,
+            GL_FLOAT,
+            GL_FALSE,
+            0,
+            null
+        );
         glDrawArrays(GL_TRIANGLES, 0, cast(int)tileVerts.length);
         glDisableVertexAttribArray(0);
+        glDisableVertexAttribArray(1);
     }
 
     /**

@@ -29,6 +29,8 @@ private:
     vec2 dragStart;
     bool dragging;
 
+    AtlasIndex cachedJune;
+
 public:
     /**
         No passthrough
@@ -37,21 +39,31 @@ public:
         this.drawPassthrough = false;
         cameraRoot = new Transform();
         cameraGimbalX = new Transform(cameraRoot);
-        testCamera = new Camera(new Transform(vec3(0, 0, -4), cameraGimbalX));
+        testCamera = new Camera(new Transform(vec3(0, 0, -2), cameraGimbalX));
         rot = vec2(0, 0);
+
         
-        enum sz = 100;
-
-        foreach(y; 0..sz) {
-            foreach(x; 0..sz) {
-                auto tile = new Tile(TileType.Dot1);
+        // enum sz = 100;
+        // foreach(y; 0..sz) {
+        //     foreach(x; 0..sz) {
+        //         auto tile = new Tile(TileType.Dot1);
                 
-                float xp = (MahjongTileWidth+0.1)*cast(float)(x-(sz/2));
-                float yp = (MahjongTileHeight+0.1)*cast(float)(y-(sz/2));
+        //         float xp = (MahjongTileWidth+0.1)*cast(float)(x-(sz/2));
+        //         float yp = (MahjongTileHeight+0.1)*cast(float)(y-(sz/2));
 
-                tile.transform.position = vec3(xp, yp, 0);
-                tiles ~= tile;
-            }
+        //         tile.transform.position = vec3(xp, yp, 0);
+        //         tiles ~= tile;
+        //     }
+        // }
+
+        enum sz = cast(int)TileType.ExtendedSetTileCount;
+        foreach(i; 0..sz) {
+            auto tile = new Tile(cast(TileType)i);
+            float xp = (MahjongTileWidth+0.1)*cast(float)(i%10);
+            float xy = (MahjongTileWidth+0.1)*cast(float)(i/10);
+            tile.transform.position = vec3(xp, -xy, 0);
+
+            tiles ~= tile;
         }
     }
 
@@ -94,11 +106,9 @@ override:
 
     void draw() {
 
-        // Apply shader only once
-        Tile.beginShading();
+        // Begin drawing tiles
+        Tile.begin();
         foreach(i, tile; tiles) {
-            float scaleVal = sin(rtest+i)/2;
-            //tile.transform.scale = vec3(1+scaleVal, 1+scaleVal, 1+scaleVal);
             tile.draw(testCamera);
         }
         GameWindow.title = "%sms drawing %s tiles".format(cast(int)(deltaTime*1000), tiles.length);
