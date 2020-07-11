@@ -15,8 +15,9 @@ private {
     // Various variables that make it easier to reference sizes
     enum VecSize = 2;
     enum UVSize = 2;
+    enum ColorSize = 4;
     enum VertsCount = 6;
-    enum DataLength = VecSize+UVSize;
+    enum DataLength = VecSize+UVSize+ColorSize;
     enum DataSize = DataLength*VertsCount;
 
     Shader spriteBatchShader;
@@ -26,6 +27,11 @@ private {
         return vec2(matrix*vec4(position.x, position.y, 0, 1));
     }
 }
+
+/**
+    Global game sprite batcher
+*/
+static SpriteBatch GameBatch;
 
 /**
     Batches Texture objects for 2D drawing
@@ -42,8 +48,8 @@ private:
 
     Texture currentTexture;
 
-    void addVertexData(vec2 position, vec2 uvs) {
-        data[dataOffset..dataOffset+DataLength] = [position.x, position.y, uvs.x, uvs.y];
+    void addVertexData(vec2 position, vec2 uvs, vec4 color) {
+        data[dataOffset..dataOffset+DataLength] = [position.x, position.y, uvs.x, uvs.y, color.x, color.y, color.z, color.w];
         dataOffset += DataLength;
     }
 
@@ -72,7 +78,7 @@ public:
         Flush will automatically be called if your draws exceed the max count
         Flush will automatically be called if you queue an other texture
     */
-    void draw(Texture texture, vec4 position, vec4 cutout = vec4.init, vec2 origin = vec2(0, 0), float rotation = 0f) {
+    void draw(Texture texture, vec4 position, vec4 cutout = vec4.init, vec2 origin = vec2(0, 0), float rotation = 0f, vec4 color = vec4(1, 1, 1, 1)) {
 
         // Flush if neccesary
         if (dataOffset == DataSize*EntryCount) flush();
@@ -82,6 +88,7 @@ public:
         currentTexture = texture;
 
         mat4 transform =
+            mat4.translation(-origin.x, -origin.y, 0) *
             mat4.translation(position.x, position.y, 0) *
             mat4.translation(origin.x, origin.y, 0) *
             mat4.zrotation(rotation) * 
@@ -93,14 +100,14 @@ public:
         }
 
         // Triangle 1
-        addVertexData(vec2(0, 1).transformVerts(transform), vec2(cutout.x, cutout.y+cutout.w));
-        addVertexData(vec2(1, 0).transformVerts(transform), vec2(cutout.x+cutout.z, cutout.y));
-        addVertexData(vec2(0, 0).transformVerts(transform), vec2(cutout.x, cutout.y));
+        addVertexData(vec2(0, 1).transformVerts(transform), vec2(cutout.x, cutout.y+cutout.w), color);
+        addVertexData(vec2(1, 0).transformVerts(transform), vec2(cutout.x+cutout.z, cutout.y), color);
+        addVertexData(vec2(0, 0).transformVerts(transform), vec2(cutout.x, cutout.y), color);
         
         // Triangle 2
-        addVertexData(vec2(0, 1).transformVerts(transform), vec2(cutout.x, cutout.y+cutout.w));
-        addVertexData(vec2(1, 1).transformVerts(transform), vec2(cutout.x+cutout.z, cutout.y+cutout.w));
-        addVertexData(vec2(1, 0).transformVerts(transform), vec2(cutout.x+cutout.z, cutout.y));
+        addVertexData(vec2(0, 1).transformVerts(transform), vec2(cutout.x, cutout.y+cutout.w), color);
+        addVertexData(vec2(1, 1).transformVerts(transform), vec2(cutout.x+cutout.z, cutout.y+cutout.w), color);
+        addVertexData(vec2(1, 0).transformVerts(transform), vec2(cutout.x+cutout.z, cutout.y), color);
 
         tris += 2;
     }
@@ -147,12 +154,24 @@ public:
             cast(GLvoid*)(UVSize*GLfloat.sizeof),
         );
 
+        // UV Buffer
+        glEnableVertexAttribArray(2);
+        glVertexAttribPointer(
+            2,
+            ColorSize,
+            GL_FLOAT,
+            GL_FALSE,
+            DataLength*GLfloat.sizeof,
+            cast(GLvoid*)((VecSize+UVSize)*GLfloat.sizeof),
+        );
+
         // Draw the triangles
         glDrawArrays(GL_TRIANGLES, 0, cast(int)(tris*3));
 
         // Reset the batcher's state
         glDisableVertexAttribArray(0);
         glDisableVertexAttribArray(1);
+        glDisableVertexAttribArray(2);
         currentTexture = null;
         dataOffset = 0;
         tris = 0;

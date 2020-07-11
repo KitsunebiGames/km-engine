@@ -144,7 +144,9 @@ public:
         // Put it in to the texture and set its entry
         texture.setDataRegion(shallowTexture.data, texpos.x, texpos.y, shallowTexture.width, shallowTexture.height);
 
-        AppLog.info("debug", "Packed texture %s in to region (%s, %s, %s, %s)", name, texpos.x, texpos.y, shallowTexture.width, shallowTexture.height);
+        debug {
+            AppLog.info("debug", "Packed texture %s in to region (%s, %s, %s, %s)", name, texpos.x, texpos.y, shallowTexture.width, shallowTexture.height);
+        }
 
         // Calculate UV coordinates and put them in to the table
         vec2 texSize = vec2(cast(float)texture.width, cast(float)texture.height);

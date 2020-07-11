@@ -7,6 +7,7 @@
 module game.gamestate;
 public import game.gamestate.mainmenu;
 public import game.gamestate.intro;
+public import game.gamestate.ingame;
 
 /**
     Manager of game states

@@ -5,3 +5,17 @@
     Authors: Luna Nielsen
 */
 module game.boards.solitaire;
+import game.boards;
+
+class SolitaireBoard : GameBoard {
+public:
+
+override:
+    void update() {
+
+    }
+
+    void draw() {
+        
+    }
+}

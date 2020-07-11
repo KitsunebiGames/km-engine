@@ -10,6 +10,7 @@ import engine;
 import game;
 import gl3n.linalg;
 import gl3n.math;
+import gl3n.interpolate;
 import std.format;
 
 
@@ -18,18 +19,11 @@ import std.format;
 */
 class IntroState : GameState {
 private:
-    Camera testCamera;
-    Tile[] tiles;
-    Transform cameraRoot;
-    Transform cameraGimbalX;
-    float rtest = 0;
+    Texture splashTexture;
+    float progress = 0;
+    enum ProgressSpeed = 1;
 
-    vec2 startRot;
-    vec2 rot;
-    vec2 dragStart;
-    bool dragging;
-
-    AtlasIndex cachedJune;
+    float alpha;
 
 public:
     /**
@@ -37,86 +31,46 @@ public:
     */
     this() {
         this.drawPassthrough = false;
-        cameraRoot = new Transform();
-        cameraGimbalX = new Transform(cameraRoot);
-        testCamera = new Camera(new Transform(vec3(0, 0, -2), cameraGimbalX));
-        rot = vec2(0, 0);
 
-        
-        // enum sz = 100;
-        // foreach(y; 0..sz) {
-        //     foreach(x; 0..sz) {
-        //         auto tile = new Tile(TileType.Dot1);
-                
-        //         float xp = (MahjongTileWidth+0.1)*cast(float)(x-(sz/2));
-        //         float yp = (MahjongTileHeight+0.1)*cast(float)(y-(sz/2));
+        // Set window title
+        GameWindow.title = "Welcome to Kitsune Mahjong";
 
-        //         tile.transform.position = vec3(xp, yp, 0);
-        //         tiles ~= tile;
-        //     }
-        // }
-
-        enum sz = cast(int)TileType.ExtendedSetTileCount;
-        foreach(i; 0..sz) {
-            auto tile = new Tile(cast(TileType)i);
-            float xp = (MahjongTileWidth+0.1)*cast(float)(i%10);
-            float xy = (MahjongTileWidth+0.1)*cast(float)(i/10);
-            tile.transform.position = vec3(xp, -xy, 0);
-
-            tiles ~= tile;
-        }
+        splashTexture = new Texture("assets/textures/splash.png");
     }
 
 override:
+
     void update() {
-        rtest += deltaTime+0.001;
+        alpha = interp_hermite(0, 0.5, 1, 0.5, progress <= 1 ? progress : 2-progress);
+        progress += deltaTime*ProgressSpeed;
 
-        if (Mouse.isButtonPressed(MouseButton.Middle)) {
-            if (!dragging) {
-                dragging = true;
-                dragStart = Mouse.position;
-                startRot = rot;
-            }
-
-            vec2 dragOffset = dragStart-Mouse.position;
-            rot.x = startRot.x-dragOffset.x/GameWindow.width;
-            rot.y = startRot.y+dragOffset.y/GameWindow.height;
-
-            cameraRoot.rotation = quat.zrotation(rot.x);
-            cameraGimbalX.rotation = quat.xrotation(rot.y);
-        }
-
-        if (Keyboard.isKeyPressed(Key.KeyA)) {
-            cameraRoot.position.x += deltaTime*1;
-        }
-        if (Keyboard.isKeyPressed(Key.KeyD)) {
-            cameraRoot.position.x -= deltaTime*1;
-        }
-        if (Keyboard.isKeyPressed(Key.KeyW)) {
-            cameraRoot.position.y -= deltaTime*1;
-        }
-        if (Keyboard.isKeyPressed(Key.KeyS)) {
-            cameraRoot.position.y += deltaTime*1;
-        }
-
-        if (Mouse.isButtonReleased(MouseButton.Middle)) {
-            dragging = false;
+        if (progress >= 2) {
+            GameStateManager.pop();
+            GameStateManager.push(new MainMenuState());
         }
     }
 
     void draw() {
 
-        // Begin drawing tiles
-        Tile.begin();
-        foreach(i, tile; tiles) {
-            tile.draw(testCamera);
-        }
-        GameWindow.title = "%sms drawing %s tiles".format(cast(int)(deltaTime*1000), tiles.length);
+        int smallest = min(GameWindow.width, GameWindow.height);
+
+        GameBatch.draw(splashTexture, 
+            vec4(GameWindow.width/2, GameWindow.height/2, smallest, smallest), 
+            vec4.init, 
+            vec2(smallest/2, smallest/2),
+            0f,
+            vec4(1, 1, 1, alpha));
+        GameBatch.flush();
     }
 
     void onActivate() {
 
-        // Set window title
-        GameWindow.title = "Welcome to Kitsune Mahjong";
+        // TODO: remove this once there's a game
+        GameStateManager.pop();
+        GameStateManager.push(new MainMenuState());
+    }
+
+    void onDeactivate() {
+        destroy(splashTexture);
     }
 }

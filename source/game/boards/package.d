@@ -5,10 +5,21 @@
     Authors: Luna Nielsen
 */
 module game.boards;
+public import game.boards.solitaire;
 
 /**
-    A board contains all the logic and rendering code used for a game
+    A board contains all the logic and rendering code used for a game/board
 */
-class GameBoard {
+abstract class GameBoard {
+public:
 
+    /**
+        Update the game board
+    */
+    abstract void update();
+
+    /**
+        Draw the game board
+    */
+    abstract void draw();
 }

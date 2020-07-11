@@ -31,7 +31,8 @@ void initEngine() {
 
     // Initialize OpenGL and make context current
     initOGL();
-    AppLog.info("Engine", "OpenGL initialized...");
+    initRender();
+    AppLog.info("Engine", "Renderer initialized...");
 
     // Initialize input
     initInput(GameWindow.winPtr);

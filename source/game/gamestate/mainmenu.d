@@ -30,7 +30,8 @@ override:
     }
 
     void onActivate() {
-        AppLog.info("MainMenu", "Main Menu state is active...");
         GameWindow.title = "Kitsune Mahjong: Main Menu";
+
+        GameStateManager.push(new InGameState("lol"));
     }
 }

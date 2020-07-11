@@ -17,11 +17,6 @@ private double deltaTime_;
     Initializes the game
 */
 void initGame() {
-    // OpenGL prep stuff
-    glEnable(GL_BLEND);
-    glEnable(GL_CULL_FACE);
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
 
     // Set window title to something better
     GameWindow.title = "Kitsune Mahjong";
