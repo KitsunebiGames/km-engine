@@ -43,7 +43,7 @@ private:
 
             lastSelected = selected;
             selected = clicked;
-            playingField[selected].transform.scale = vec3(0.9, 0.9, 0.9);
+            playingField[selected].selected = true;
 
             if (selected.x != int.min && lastSelected.x != int.min) {
 
@@ -57,8 +57,8 @@ private:
 
                 // Destroy both tiles, they are the same
                 parent.june.tileCleared();
-                playingField.remove(selected);
-                playingField.remove(lastSelected);
+                playingField[selected].taken = true;
+                playingField[lastSelected].taken = true;
                 selected = vec2i(int.min, int.min);
                 lastSelected = vec2i(int.min, int.min);
             }
@@ -68,12 +68,12 @@ private:
     void resetSelection() {
 
         if (selected.x != int.min) {
-            playingField[selected].transform.scale = vec3(1, 1, 1);
+            playingField[selected].selected = false;
             selected = vec2i(int.min, int.min);
         }
 
         if (lastSelected.x != int.min) {
-            playingField[lastSelected].transform.scale = vec3(1, 1, 1);
+            playingField[lastSelected].selected = false;
             lastSelected = vec2i(int.min, int.min);
         }
     }
@@ -98,6 +98,8 @@ override:
 
     void update() {
         camera.update();
+
+        playingField.update();
 
         if (Mouse.isButtonClicked(MouseButton.Left)) {
             updateGameplay();

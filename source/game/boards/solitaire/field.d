@@ -8,6 +8,7 @@ module game.boards.solitaire.field;
 import engine;
 import game;
 import game.tiles;
+import game.boards.solitaire.tile;
 import game.boards.solitaire.tilegen;
 import std.random;
 
@@ -21,9 +22,9 @@ private struct TileVec {
 */
 class Field {
 private:
-    MahjongTile[TileVec] tiles;
+    SolTile[TileVec] tiles;
 
-    void placeInFreeSpot(MahjongTile tile, int width, int height) {
+    void placeInFreeSpot(SolTile tile, int width, int height) {
         TileVec position;
         do {
             position = TileVec(uniform(0, width), uniform(0, height));
@@ -54,12 +55,25 @@ public:
     }
 
     /**
+        Update the tiles
+    */
+    void update() {
+        foreach(tile; tiles) {
+            tile.update();
+        }
+    }
+
+    /**
         Draw the tiles
     */
     void draw(Camera camera) {
         Tile.begin();
-        foreach(tile; tiles) {
+        foreach(pos, tile; tiles) {
             tile.draw(camera);
+
+            if (tile.takenAnimationDone) {
+                this.remove(vec2i(pos.x, pos.y));
+            }
         }
         Tile.end();
     }
@@ -74,7 +88,7 @@ public:
     /**
         Index the tiles
     */
-    MahjongTile opIndex(vec2i index) {
+    SolTile opIndex(vec2i index) {
         return TileVec(index.x, index.y) in tiles ? tiles[TileVec(index.x, index.y)] : null;
     }
 
@@ -114,7 +128,9 @@ public:
         Gets if the index specified is playable
     */
     bool isPlayable(vec2i index) {
-        return TileVec(index.x-1, index.y) !in tiles || TileVec(index.x+1, index.y) !in tiles; 
+        return 
+        (TileVec(index.x-1, index.y) !in tiles || TileVec(index.x+1, index.y) !in tiles) &&
+        (TileVec(index.x, index.y) in tiles && !tiles[TileVec(index.x, index.y)].taken);
     }
 
     /**
@@ -123,7 +139,7 @@ public:
     void shuffle(int width = 18, int height = 8) {
         import std.algorithm.mutation : remove;
         TileVec[] positions;
-        MahjongTile[] tiles;
+        SolTile[] tiles;
 
         // Populate our arrays
         foreach(pos, tile; this.tiles) {

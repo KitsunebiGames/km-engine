@@ -7,6 +7,7 @@
 module game.boards.solitaire.tilegen;
 import engine;
 import game;
+import game.boards.solitaire.tile;
 import game.tiles;
 import std.random;
 import std.conv;
@@ -89,10 +90,10 @@ public:
     /**
         Gets the next tile
     */
-    MahjongTile getNext() {
+    SolTile getNext() {
         // Generate and find next pair if we're on an uneven generation step
         if (genIndex == 1) {
-            MahjongTile nextTile = new MahjongTile(currentType);
+            SolTile nextTile = new SolTile(currentType);
             generatedCount[currentType]++;
 
             setNextType(GenMode.Cycles);
@@ -103,7 +104,7 @@ public:
         // We're on an even step just get the next tile
         genIndex++;
         generatedCount[currentType]++;
-        return new MahjongTile(currentType);
+        return new SolTile(currentType);
     }
 
     /**
