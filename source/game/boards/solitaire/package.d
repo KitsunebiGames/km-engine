@@ -28,7 +28,7 @@ private:
 
     void updateGameplay() {
         vec2i clicked = playingField.getClicked(camera.camera, Mouse.position, vec2(GameWindow.width, GameWindow.height));
-        if (clicked.x > int.min) {
+        if (clicked.x != int.min) {
             
             // Clicking on the same tile twice counts as resetting the selection
             if (clicked == selected) {
@@ -39,7 +39,6 @@ private:
             // Can't select unplayable tiles
             if (!playingField.isPlayable(clicked)) return;
 
-            AppLog.info("debug", "new tile");
 
             lastSelected = selected;
             selected = clicked;

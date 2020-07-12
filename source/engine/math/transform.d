@@ -19,6 +19,11 @@ private:
         return rotation.to_matrix!(4, 4) * mat4.translation(position) * mat4.scaling(scale.x, scale.y, scale.z);
     }
 
+    // Generated matrix
+    mat4 g_matrix_ns() {
+        return rotation.to_matrix!(4, 4) * mat4.translation(position);
+    }
+
 public:
 
     /**
@@ -80,6 +85,14 @@ public:
     mat4 matrix() {
         if (parent is null) return g_matrix;
         return g_matrix*parent.matrix;
+    }
+
+    /**
+        Gets the calculated matrix for this transform without any scaling applied
+    */
+    mat4 matrixUnscaled() {
+        if (parent is null) return g_matrix_ns;
+        return g_matrix_ns*parent.matrixUnscaled;
     }
 }
 

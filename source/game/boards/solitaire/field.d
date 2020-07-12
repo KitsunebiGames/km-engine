@@ -87,8 +87,7 @@ public:
 
             // Check ray intersections on the tile
             float distance;
-            if (tile.collider.isRayIntersecting(castRay, tile.transform.matrix, distance)) {
-                AppLog.info("debug", "Intersection...");
+            if (tile.collider.isRayIntersecting(castRay, tile.transform.matrixUnscaled, distance)) {
                 
                 // This tile was closer to the camera, select that.
                 if (distance < lastDistance) {

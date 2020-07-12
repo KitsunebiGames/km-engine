@@ -25,8 +25,6 @@ private:
 
     float alpha;
 
-    bool start = false;
-
 public:
     /**
         No passthrough
@@ -43,12 +41,6 @@ public:
 override:
 
     void update() {
-        if (Keyboard.isKeyPressed(Key.KeySpace)) {
-            start = true;
-        }
-
-        if (!start) return;
-
         alpha = interp_hermite(0, 0.5, 1, 0.5, progress <= 1 ? progress : 2-progress);
         progress += deltaTime*ProgressSpeed;
 
