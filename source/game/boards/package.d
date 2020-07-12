@@ -53,7 +53,7 @@ public:
         // Set up camera
         cameraPivot = new Transform();
         cameraArm = new Transform(cameraPivot);
-        cameraPivot.position.z = -(MahjongTileLength*2);
+        cameraPivot.position.z = -1;
         camera = new Camera(cameraArm);
 
         // TODO: make these customizable

@@ -7,6 +7,7 @@
 module game.boards.solitaire;
 import game.boards.solitaire.field;
 import game.boards;
+import game.tiles;
 import engine;
 import game;
 import std.random;
@@ -84,8 +85,11 @@ public:
     */
     this(InGameState ingame) {
         super(ingame);
-        playingField = new Field();
 
+        // Initialize mahjong tiles
+        initMahjong("default");
+
+        playingField = new Field();
         ui = new Camera2D();
         camera = new BoardCam();
     }

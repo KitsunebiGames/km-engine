@@ -54,6 +54,7 @@ class AtlasCollection {
 private:
     TextureAtlas[] atlasses;
     AtlasIndex[string] texTable;
+    Filtering defaultFilter = Filtering.Point;
 
 public:
     /**
@@ -76,6 +77,16 @@ public:
     void add(string name, string file, size_t atlas=0) {
         add(name, ShallowTexture(file), atlas);
     }
+    
+    /**
+        Sets the filtering mode for the collection
+    */
+    void setFiltering(Filtering filtering) {
+        defaultFilter = filtering;
+        foreach(atlas; atlasses) {
+            atlas.setFiltering(filtering);
+        }
+    }
 
     /**
         Add texture to the atlas collection
@@ -87,6 +98,7 @@ public:
         if (atlas >= atlasses.length) {
             AppLog.info("AtlasCollection", "All atlases were out of space, creating new atlas %s...", atlasses.length);
             atlasses ~= new TextureAtlas(vec2i(4096, 4096));
+            atlasses[$-1].setFiltering(defaultFilter);
         }
 
         // Add to atlas and get uvs
@@ -212,5 +224,27 @@ public:
         uvPoints.w -= 0.25/texSize.y;
         entries[name] = AtlasArea(texArea, uvPoints);
         return entries[name];
+    }
+
+    /**
+        Remove an entry from the atlas
+    */
+    void remove(string name) {
+        packer.remove(vec4i(
+                cast(int)entries[name].area.x, 
+                cast(int)entries[name].area.y, 
+                cast(int)entries[name].area.z, 
+                cast(int)entries[name].area.w
+            )
+        );
+        entries.remove(name);
+    }
+
+    /**
+        Clears the texture atlas
+    */
+    void clear() {
+        packer.clear();
+        entries.clear();
     }
 }

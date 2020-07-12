@@ -7,6 +7,7 @@
 module game.boards.solitaire.field;
 import engine;
 import game;
+import game.tiles;
 import game.boards.solitaire.tilegen;
 import std.random;
 
@@ -20,9 +21,9 @@ private struct TileVec {
 */
 class Field {
 private:
-    Tile[TileVec] tiles;
+    MahjongTile[TileVec] tiles;
 
-    void placeInFreeSpot(Tile tile, int width, int height) {
+    void placeInFreeSpot(MahjongTile tile, int width, int height) {
         TileVec position;
         do {
             position = TileVec(uniform(0, width), uniform(0, height));
@@ -36,7 +37,7 @@ private:
         );
 
         // Update the collider so we can click it
-        tile.updateCollider();
+        tile.update();
 
         // Put the tile in to the field
         tiles[position] = tile;
@@ -52,13 +53,14 @@ public:
         }
     }
 
+    /**
+        Draw the tiles
+    */
     void draw(Camera camera) {
         Tile.begin();
-
         foreach(tile; tiles) {
             tile.draw(camera);
         }
-
         Tile.end();
     }
 
@@ -72,7 +74,7 @@ public:
     /**
         Index the tiles
     */
-    Tile opIndex(vec2i index) {
+    MahjongTile opIndex(vec2i index) {
         return TileVec(index.x, index.y) in tiles ? tiles[TileVec(index.x, index.y)] : null;
     }
 
@@ -121,7 +123,7 @@ public:
     void shuffle(int width = 18, int height = 8) {
         import std.algorithm.mutation : remove;
         TileVec[] positions;
-        Tile[] tiles;
+        MahjongTile[] tiles;
 
         // Populate our arrays
         foreach(pos, tile; this.tiles) {
@@ -145,7 +147,7 @@ public:
             );
 
             // Update the collider so we can click it
-            tile.updateCollider();
+            tile.update();
 
             // Put the tile in to the field
             this.tiles[pos] = tile;

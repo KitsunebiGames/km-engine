@@ -99,7 +99,7 @@ public:
         this.board.draw();
 
         // Draw june
-        june.draw(vec2(GameWindow.width-64, GameWindow.height));
+        june.draw(vec2(GameWindow.width-(june.size.x/2), GameWindow.height));
     }
 
     override void onActivate() {

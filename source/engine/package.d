@@ -41,6 +41,10 @@ void initEngine() {
     // Initialize atlasser
     GameAtlas = new AtlasCollection();
     AppLog.info("Engine", "Texture atlassing initialized...");
+
+    // Initialize subsystems
+    initTileMesh();
+    AppLog.info("Engine", "Intialized internal state for renderer...");
 }
 
 /**

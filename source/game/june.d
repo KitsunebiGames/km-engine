@@ -21,21 +21,26 @@ enum JuneState : string {
 */
 class June {
 private:
-    vec2 juneScale;
-
     JuneState state;
     AtlasIndex cached;
+    AtlasCollection juneCache;
     
     float clearTimer = 0f;
 
 public:
+    /**
+        Size of june's drawing area
+    */
+    vec2 size;
 
     /**
         Constructs a new June
     */
     this() {
-        if (!GameAtlas.has("JuneJoy")) GameAtlas.add("JuneJoy", "assets/textures/june/junejoy.png");
-        if (!GameAtlas.has("JuneSmile")) GameAtlas.add("JuneSmile", "assets/textures/june/junesmile.png");
+        juneCache = new AtlasCollection();
+        juneCache.setFiltering(Filtering.Linear);
+        juneCache.add("JuneJoy", "assets/textures/june/junejoy.png");
+        juneCache.add("JuneSmile", "assets/textures/june/junesmile.png");
     
         this.changeState(JuneState.Smile);
     }
@@ -45,7 +50,7 @@ public:
     */
     void changeState(JuneState state) {
         this.state = state;
-        cached = GameAtlas[cast(string)state];
+        cached = juneCache[cast(string)state];
     }
 
     /**
@@ -60,7 +65,7 @@ public:
         Update
     */
     void update() {
-        juneScale = vec2(cached.area.z/5, cached.area.w/5);
+        size = vec2(cached.area.z/4.5, cached.area.w/4.5);
         if (clearTimer > 0) {
             clearTimer -= deltaTime*1;
             if (clearTimer <= 0) {
@@ -75,20 +80,19 @@ public:
         bopping specifies whether june will be bopping up and down
     */
     void draw(bool bopping=true)(vec2 position, float rotation = 0) {
-
         // Draw June
         static if (bopping) {
             GameBatch.draw(
                 cached,
-                vec4(position.x, (position.y+4)-(sin(currTime)*4), juneScale.x, juneScale.y), 
-                vec2(juneScale.x/2, juneScale.y),
+                vec4(position.x, (position.y+4)-(sin(currTime)*4), size.x, size.y), 
+                vec2(size.x/2, size.y),
                 rotation,
             );
         } else {
             GameBatch.draw(
                 cached,
-                vec4(position.x, position.y, juneScale.x, juneScale.y), 
-                vec2(juneScale.x/2, juneScale.y),
+                vec4(position.x, position.y, size.x, size.y), 
+                vec2(size.x/2, size.y),
                 rotation,
             );
         }
