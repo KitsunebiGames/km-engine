@@ -6,13 +6,24 @@
 */
 module game.boards;
 public import game.boards.solitaire;
+public import game.gamestate.ingame;
 import engine;
 
 /**
     A board contains all the logic and rendering code used for a game/board
 */
 abstract class GameBoard {
+protected:
+    InGameState parent;
+
 public:
+
+    /**
+        Create new game board
+    */
+    this(InGameState parent) {
+        this.parent = parent;
+    }
 
     /**
         Update the game board

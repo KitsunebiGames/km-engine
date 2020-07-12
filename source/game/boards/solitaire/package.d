@@ -55,6 +55,7 @@ private:
                 }
 
                 // Destroy both tiles, they are the same
+                parent.june.tileCleared();
                 playingField.remove(selected);
                 playingField.remove(lastSelected);
                 selected = vec2i(int.min, int.min);
@@ -77,7 +78,12 @@ private:
     }
 
 public:
-    this() {
+
+    /**
+        Constructor
+    */
+    this(InGameState ingame) {
+        super(ingame);
         playingField = new Field();
 
         ui = new Camera2D();

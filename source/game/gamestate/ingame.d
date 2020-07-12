@@ -5,11 +5,11 @@
     Authors: Luna Nielsen
 */
 module game.gamestate.ingame;
+public import game.june;
 import game.gamestate;
 import game.boards;
 import engine;
 import game;
-import game.june;
 
 /**
     The game state of ingame
@@ -73,7 +73,7 @@ public:
 
         // TODO: actually use targetGame
 
-        this.board = new SolitaireBoard();
+        this.board = new SolitaireBoard(this);
         background = new Texture("assets/textures/backgrounds/forest.jpg");
 
         june = new June();

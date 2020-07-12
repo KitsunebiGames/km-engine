@@ -25,6 +25,8 @@ private:
 
     JuneState state;
     AtlasIndex cached;
+    
+    float clearTimer = 0f;
 
 public:
 
@@ -47,10 +49,24 @@ public:
     }
 
     /**
+        Trigger june tile clear mode
+    */
+    void tileCleared() {
+        clearTimer = 1;
+        this.changeState(JuneState.Joy);
+    }
+
+    /**
         Update
     */
     void update() {
         juneScale = vec2(cached.area.z/5, cached.area.w/5);
+        if (clearTimer > 0) {
+            clearTimer -= deltaTime*1;
+            if (clearTimer <= 0) {
+                this.changeState(JuneState.Smile);
+            }
+        }
     }
 
     /**
