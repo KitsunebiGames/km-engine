@@ -200,6 +200,11 @@ public:
         freeRectangles ~= area;
     }
 
+    void clear() {
+        freeRectangles = [vec4i(0, 0, size.x, size.y)];
+        usedRectangles = [];
+    }
+
     /**
         Gets ratio of surface area used
     */
@@ -233,5 +238,19 @@ public:
     */
     vec4i packTexture(vec2i size) {
         return bin.insert(size);
+    }
+
+    /**
+        Remove an area from the texture packer
+    */
+    void remove(vec4i area) {
+        bin.remove(area);
+    }
+
+    /**
+        Clear the texture packer
+    */
+    void clear() {
+        bin.clear();
     }
 }
