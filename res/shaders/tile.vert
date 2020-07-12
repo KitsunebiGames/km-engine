@@ -6,8 +6,8 @@
 */
 #version 330
 uniform mat4 mvp;
-in vec3 verts;
-in vec2 uvs;
+layout(location = 0) in vec3 verts;
+layout(location = 1) in vec2 uvs;
 
 out vec2 texUVs;
 
