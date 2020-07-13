@@ -26,6 +26,9 @@ private:
     AtlasCollection juneCache;
     
     float clearTimer = 0f;
+    float jumpTimer = 0f;
+
+    float yOffset = 0;
 
 public:
     /**
@@ -58,6 +61,7 @@ public:
     */
     void tileCleared() {
         clearTimer = 1;
+        jumpTimer = 1;
         this.changeState(JuneState.Joy);
     }
 
@@ -66,11 +70,22 @@ public:
     */
     void update() {
         size = vec2(cached.area.z/4.5, cached.area.w/4.5);
+        yOffset = sin(currTime)*4;
+
         if (clearTimer > 0) {
             clearTimer -= deltaTime*1;
+            jumpTimer -= deltaTime*4;
+
+            // Calculate the jump
+            immutable(float) jumpT = (1-(jumpTimer))*2;
+            immutable(float) lerpVal = clamp(jumpT < 1 ? jumpT : 2-jumpT, 0, 1);
+            yOffset += lerp!float(0, 16, lerpVal);
+
             if (clearTimer <= 0) {
+                jumpTimer = 0;
                 this.changeState(JuneState.Smile);
             }
+            return;
         }
     }
 
@@ -84,7 +99,7 @@ public:
         static if (bopping) {
             GameBatch.draw(
                 cached,
-                vec4(position.x, (position.y+4)-(sin(currTime)*4), size.x, size.y), 
+                vec4(position.x, (position.y+4)-yOffset, size.x, size.y), 
                 vec2(size.x/2, size.y),
                 rotation,
             );

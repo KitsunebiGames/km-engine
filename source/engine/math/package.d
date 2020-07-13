@@ -12,6 +12,7 @@ public import std.math;
 public import gl3n.math;
 public import gl3n.linalg;
 public import gl3n.aabb;
+public import gl3n.interpolate;
 
 /**
     A basic ray
