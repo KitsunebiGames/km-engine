@@ -13,6 +13,14 @@ public import gl3n.math;
 public import gl3n.linalg;
 public import gl3n.aabb;
 public import gl3n.interpolate;
+import engine.core.log;
+
+/**
+    Smoothly dampens from a position to a target
+*/
+vec3 dampen(vec3 pos, vec3 target, float delta, float speed = 1) {
+    return (pos - target) * pow(1e-4f, delta*speed) + target;
+}
 
 /**
     A basic ray
@@ -27,37 +35,46 @@ struct Ray {
         Direction of the ray (unit vector)
     */
     vec3 direction;
-}
 
+    string toString() {
+        import std.format : format;
+        return "origin=<%s, %s, %s> dir=<%s, %s, %s>".format(origin.x, origin.y, origin.z, direction.x, direction.y, direction.z);
+    }
+}
 /**
     Casts a screen space ray from the mouse position
 */
 Ray castScreenSpaceRay(vec2 mouse, vec2 viewSize, mat4 vp) {
 
-    // Start of ray
+    // mouse to homogenus coordinates
+    double x = mouse.x / (viewSize.x * 0.5) - 1.0;
+    double y = mouse.y / (viewSize.y * 0.5) - 1.0;
+
+    x = clamp(x, -1, 1);
+    y = clamp(y, -1, 1);
+
     vec4 rayStart = vec4(
-        (mouse.x/viewSize.x - 0.5) * 2.0, // Map to screen space coordinates -1 to 1
-        -(mouse.y/viewSize.y - 0.5) * 2.0, // Map to screen space coordinates -1 to 1
-        -1, // Near plane is -1 in NDC.
-        1,
-    );
-
-    // End of ray
-    vec4 rayEnd = vec4(
-        (mouse.x/viewSize.x - 0.5) * 2.0,
-        -(mouse.y/viewSize.y - 0.5) * 2.0,
+        x, 
+        -y,
         0,
-        1,
+        1
     );
 
-    // Do the matrix math transforming projection-view space in to model space
-    mat4 vpInverse =        vp.inverse;
+    vec4 rayEnd = vec4(
+        x, 
+        -y,
+        1,
+        1
+    );
+
+    // Get inverse vp matrix
+    immutable(mat4) vpInverse = vp.inverse;
     vec4 rayStartWorld =    vpInverse * rayStart;   rayStartWorld /= rayStartWorld.w;
     vec4 rayEndWorld =      vpInverse * rayEnd;     rayEndWorld /= rayEndWorld.w;
 
-    vec3 rayDir = (rayEndWorld - rayStartWorld).normalized;
-    
-    return Ray(vec3(rayStartWorld.xyz), rayDir);
+    // Get the ray direction
+    vec3 rayDir = vec3(rayEndWorld-rayStartWorld).normalized;
+    return Ray(rayStartWorld.xyz, rayDir);
 }
 
 /**

@@ -15,7 +15,7 @@ class Camera {
 private:
 
     mat4 g_matrix() {
-        return mat4.perspective(GameWindow.width, GameWindow.height, fov, 0.001, 100) * transform.matrix;
+        return mat4.perspective(GameWindow.width, GameWindow.height, fov, 0.1, 50) * transform.matrix;
     }
 
 public:
