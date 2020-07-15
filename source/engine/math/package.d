@@ -92,7 +92,7 @@ bool isRayIntersecting(OBB boundingBox, Ray ray, mat4 modelmatrix, ref float iDi
         float e = dot(xaxis, delta);
         float f = dot(ray.direction, xaxis);
 
-        if (fabs(f) > 0.001f) {
+        if (fabs(f) > 0.0001f) {
             float t1 = (e+boundingBox.min.x)/f;
             float t2 = (e+boundingBox.max.x)/f;
 
@@ -107,8 +107,6 @@ bool isRayIntersecting(OBB boundingBox, Ray ray, mat4 modelmatrix, ref float iDi
             if (t1 > min) min = t1;
 
             if (max < min) return false;
-        } else {
-            if (-e+boundingBox.min.x > 0f || -e+boundingBox.max.x < 0f) return false;
         }
     }
 
@@ -117,7 +115,7 @@ bool isRayIntersecting(OBB boundingBox, Ray ray, mat4 modelmatrix, ref float iDi
         float e = dot(yaxis, delta);
         float f = dot(ray.direction, yaxis);
 
-        if (fabs(f) > 0.001f) {
+        if (fabs(f) > 0.0001f) {
             float t1 = (e+boundingBox.min.y)/f;
             float t2 = (e+boundingBox.max.y)/f;
 
@@ -132,8 +130,6 @@ bool isRayIntersecting(OBB boundingBox, Ray ray, mat4 modelmatrix, ref float iDi
             if (t1 > min) min = t1;
 
             if (max < min) return false;
-        } else {
-            if (-e+boundingBox.min.y > 0f || -e+boundingBox.max.y < 0f) return false;
         }
     }
 
@@ -142,7 +138,7 @@ bool isRayIntersecting(OBB boundingBox, Ray ray, mat4 modelmatrix, ref float iDi
         float e = dot(zaxis, delta);
         float f = dot(ray.direction, zaxis);
 
-        if (fabs(f) > 0.001f) {
+        if (fabs(f) > 0.0001f) {
             float t1 = (e+boundingBox.min.z)/f;
             float t2 = (e+boundingBox.max.z)/f;
 
@@ -157,8 +153,6 @@ bool isRayIntersecting(OBB boundingBox, Ray ray, mat4 modelmatrix, ref float iDi
             if (t1 > min) min = t1;
 
             if (max < min) return false;
-        } else {
-            if (-e+boundingBox.min.z > 0f || -e+boundingBox.max.z < 0f) return false;
         }
     }
     
