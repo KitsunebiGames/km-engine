@@ -59,12 +59,17 @@ override:
                 }
             }
 
+            if (playingField.empty) {
+                GameStateManager.push(new GameOverState(this.score, this.time));
+            }
+
             // Set the focus to the new bounds center (if the play area shrinks)
             camera.setFocus(playingField.calculateBounds().center);
         }
 
         if (Mouse.isButtonClicked(MouseButton.Right)) {
             playingField.undo();
+            camera.setFocus(playingField.calculateBounds().center);
         }
     }
 

@@ -158,7 +158,11 @@ public:
         Gets if the field is empty (the player has won)
     */
     bool empty() {
-        return tiles.length == 0;
+        int active = 0;
+        foreach(tile; tiles) {
+            if (tile.active) active++;
+        }
+        return active == 0;
     }
 
     /**

@@ -63,13 +63,6 @@ override:
         GameBatch.flush();
     }
 
-    void onActivate() {
-
-        // TODO: remove this once there's a game
-        // GameStateManager.pop();
-        // GameStateManager.push(new MainMenuState());
-    }
-
     void onDeactivate() {
         destroy(splashTexture);
     }

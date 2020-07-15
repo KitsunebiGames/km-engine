@@ -6,7 +6,7 @@
 */
 module game;
 import engine;
-import game.gamestate;
+public import game.gamestate;
 import bindbc.glfw;
 
 private double previousTime_;

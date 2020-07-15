@@ -22,7 +22,7 @@ public:
 
 override:
     void update() {
-        
+        GameStateManager.push(new InGameState("Mahjong Solitaire"));
     }
 
     void draw() {
@@ -31,7 +31,5 @@ override:
 
     void onActivate() {
         GameWindow.title = "Kitsune Mahjong: Main Menu";
-
-        GameStateManager.push(new InGameState("lol"));
     }
 }
