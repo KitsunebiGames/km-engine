@@ -8,21 +8,38 @@ module game.boards;
 public import game.boards.solitaire;
 public import game.gamestate.ingame;
 import engine;
+import game;
 
 /**
     A board contains all the logic and rendering code used for a game/board
 */
 abstract class GameBoard {
+private:
+    double startTime;
+
 protected:
     InGameState parent;
 
 public:
 
     /**
+        The score
+    */
+    int score;
+
+    /**
         Create new game board
     */
     this(InGameState parent) {
         this.parent = parent;
+        startTime = currTime;
+    }
+
+    /**
+        How long you've been playing the board in seconds
+    */
+    final double time() {
+        return currTime-startTime;
     }
 
     /**
@@ -43,12 +60,16 @@ class BoardCam {
 private:
     Transform cameraPivot;
     Transform cameraArm;
+    vec3 target;
+    vec3 rotation;
 
 public:
     /**
         Construct board camera
     */
     this() {
+
+        rotation = vec3(0);
 
         // Set up camera
         cameraPivot = new Transform();
@@ -67,6 +88,16 @@ public:
     Camera camera;
 
     /**
+        Set the point the camera focuses at
+    */
+    void setFocus(vec3 area, bool instant = false) {
+        target = -area;
+        if (instant) {
+            cameraPivot.position = target;
+        }
+    }
+
+    /**
         Updates the camer's transforms
     */
     void update() {
@@ -79,7 +110,11 @@ public:
         float mouseRelX = (mousePos.x-winCenter.x)/GameWindow.width;
         float mouseRelY = (mousePos.y-winCenter.y)/GameWindow.height;
 
-        cameraPivot.rotation = quat.euler_rotation(-(mouseRelY*0.5), -(mouseRelX*0.5), 0);
+        rotation = rotation.dampen(vec3(-(mouseRelY*0.8), -(mouseRelX*0.8), 0), deltaTime, 4);
+        cameraPivot.rotation = quat.euler_rotation(rotation.x, rotation.y, rotation.z);
+
+        // Smoothly move the camera to the target
+        cameraPivot.position = cameraPivot.position.dampen(target, deltaTime);
     }
 
 }

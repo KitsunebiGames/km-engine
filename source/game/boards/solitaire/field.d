@@ -5,16 +5,38 @@
     Authors: Luna Nielsen
 */
 module game.boards.solitaire.field;
+import game.boards.solitaire;
 import engine;
 import game;
 import game.tiles;
-import game.boards.solitaire.tile;
-import game.boards.solitaire.tilegen;
 import std.random;
 
-private struct TileVec {
-    int x;
-    int y;
+/**
+    Data used to initialize a field
+*/
+struct FieldData {
+public:
+
+    /**
+        Name of the field
+    */
+    string name;
+
+    /**
+        Slots in the field
+    */
+    vec3i[] slots;
+}
+
+/**
+    Actions performed
+*/
+struct SolAction {
+
+    /**
+        The tiles paired
+    */
+    SolTile[2] paired;
 }
 
 /**
@@ -22,36 +44,86 @@ private struct TileVec {
 */
 class Field {
 private:
-    SolTile[TileVec] tiles;
+    SolitaireBoard board;
 
-    void placeInFreeSpot(SolTile tile, int width, int height) {
-        TileVec position;
-        do {
-            position = TileVec(uniform(0, width), uniform(0, height));
-        } while(position in tiles);
+    // Actions
+    ActionStack!SolAction actions;
+    int undos;
 
-        // Set the tile in an appropriate position
-        tile.transform.position = vec3(
-            MahjongTileWidth*(cast(float)position.x-(width/2)),
-            MahjongTileHeight*(cast(float)position.y-(height/2)),
-            0
-        );
+    SolTile current;
+    SolTile previous;
 
-        // Update the collider so we can click it
-        tile.update();
+    void resetSelection() {
+        if (current !is null) {
+            current.selected = false;
+            current = null;
+        }
 
-        // Put the tile in to the field
-        tiles[position] = tile;
+        if (previous !is null) {
+            previous.selected = false;
+            previous = null;
+        }
+    }
+
+    void fillBoard() {
+        TileGenerator generator = new TileGenerator();
+
+        int pairsLeft = cast(int)tiles.length/2;
+        while (pairsLeft > 0) {
+            int idx = uniform(0, cast(int)tiles.length);
+            int idx2 = uniform(0, cast(int)tiles.length);
+
+            // Skip tiles that are the same
+            if (idx == idx2) continue;
+
+            // Skip inactive tiles
+            if (!tiles[idx].active || !tiles[idx2].active) continue;
+
+            // We'll have to try again we didn't find a free pair
+            if (tiles[idx].isAvailable && tiles[idx2].isAvailable) {
+
+                // Deactivate the tiles so we don't try setting them again
+                tiles[idx].active = false;
+                tiles[idx2].active = false;
+
+                // Change the type of the tiles to the next pair in the generator
+                tiles[idx].changeType(generator.getNext());
+                tiles[idx2].changeType(generator.getNext());
+
+                // We've just matched 2 tiles, reflect that in how many there's left to "solve"
+                pairsLeft--;
+            }
+        }
+
+        // Re-activate all the tiles.
+        foreach(tile; tiles) tile.active = true;
+    }
+
+    void generateBoard() {
+        foreach(i; 0..144) {
+            SolTile newTile = new SolTile(this, TileType.Unmarked);
+            newTile.position = vec3i((i%18)*2, (i/18)*2, 0);
+            tiles ~= newTile;
+        }
+        fillBoard();
     }
 
 public:
 
-    this() {
-        TileGenerator generator = new TileGenerator();
+    /**
+        Name of the field
+    */
+    string name;
 
-        foreach(i; 0..144) {
-            placeInFreeSpot(generator.getNext(), 18, 8);
-        }
+    /**
+        The tiles on the field
+    */
+    SolTile[] tiles;
+
+    this(SolitaireBoard board) {
+        this.board = board;
+        actions = new ActionStack!SolAction();
+        this.generateBoard();
     }
 
     /**
@@ -68,12 +140,16 @@ public:
     */
     void draw(Camera camera) {
         Tile.begin();
-        foreach(pos, tile; tiles) {
-            tile.draw(camera);
 
-            if (tile.takenAnimationDone) {
-                this.remove(vec2i(pos.x, pos.y));
+        SolTile hovered = getTileHover(camera, Mouse.position, vec2(GameWindow.width, GameWindow.height));
+        if (hovered !is null) {
+            if (hovered.isAvailable) {
+                hovered.hover();
             }
+        }
+
+        foreach(tile; tiles) {
+            tile.draw(camera);
         }
         Tile.end();
     }
@@ -86,90 +162,106 @@ public:
     }
 
     /**
-        Index the tiles
+        Get the tile hovered over
     */
-    SolTile opIndex(vec2i index) {
-        return TileVec(index.x, index.y) in tiles ? tiles[TileVec(index.x, index.y)] : null;
-    }
-
-    /**
-        Gets the tile the player clicked
-    */
-    vec2i getClicked(Camera camera, vec2 mouse, vec2 viewport) {
-        Ray castRay = mouse.castScreenSpaceRay(viewport, camera.matrix);
-        TileVec closest = TileVec(int.min, int.min);
+    SolTile getTileHover(Camera camera, vec2 mouse, vec2 viewport) {
+        SolTile closest;
         float lastDistance = float.max;
-        foreach(pos, tile; tiles) {
+        foreach(tile; tiles) {
 
-            // Check ray intersections on the tile
+            // Inactive tiles are to be ignored
+            if (!tile.active) continue;
+
             float distance;
-            if (tile.collider.isRayIntersecting(castRay, tile.transform.matrixUnscaled, distance)) {
-                
-                // This tile was closer to the camera, select that.
+            if (tile.hovered(camera, mouse, viewport, distance)) {
+
+                // Tile is closer to camera
                 if (distance < lastDistance) {
                     lastDistance = distance;
-                    closest = pos;
+                    closest = tile;
                 }
             }
         }
-
-        return vec2i(closest.x, closest.y);
+        return closest;
     }
-
+    
     /**
-        Remove tile from board
+        Select a tile for pairing
     */
-    void remove(vec2i index) {
-        destroy(tiles[TileVec(index.x, index.y)]);
-        tiles.remove(TileVec(index.x, index.y));
-    }
+    bool pair(SolTile tile) {
 
-    /**
-        Gets if the index specified is playable
-    */
-    bool isPlayable(vec2i index) {
-        return 
-        (TileVec(index.x-1, index.y) !in tiles || TileVec(index.x+1, index.y) !in tiles) &&
-        (TileVec(index.x, index.y) in tiles && !tiles[TileVec(index.x, index.y)].taken);
-    }
+        // Can't pair unavailable tiles
+        if (!tile.isAvailable) return false;
 
-    /**
-        Shuffle the board
-    */
-    void shuffle(int width = 18, int height = 8) {
-        import std.algorithm.mutation : remove;
-        TileVec[] positions;
-        SolTile[] tiles;
-
-        // Populate our arrays
-        foreach(pos, tile; this.tiles) {
-            positions ~= pos;
-            tiles ~= tile;
+        // Reset the selection if a tile is paired with itself
+        if (current == tile) {
+            this.resetSelection();
+            return false;
         }
 
-        // Clear them out
-        this.tiles.clear();
+        // Update the state
+        previous = current;
+        current = tile;
+        current.selected = true;
 
-        // Rearrange
-        foreach(i, tile; tiles) {
-            size_t posIndex = uniform(0, positions.length);
-            TileVec pos = positions[posIndex];
+        // We can't pair anything (yet)
+        if (previous is null) return false;
 
-            // Set the tile in an appropriate position
-            tile.transform.position = vec3(
-                MahjongTileWidth*(cast(float)pos.x-(width/2)),
-                MahjongTileHeight*(cast(float)pos.y-(height/2)),
-                0
-            );
-
-            // Update the collider so we can click it
-            tile.update();
-
-            // Put the tile in to the field
-            this.tiles[pos] = tile;
-
-            // Remove one possible position from the list
-            positions = positions.remove(posIndex);
+        // If tiles match then 
+        if (previous.type == current.type) {
+            actions.push(SolAction([current, previous]));
+            current.active = false;
+            previous.active = false;
+            board.score += current.scoreWorth;
+            this.resetSelection();
+            return true;
         }
+
+        // Tiles did not match, reset selection
+        this.resetSelection();
+        return false;
+    }
+
+    /**
+        Undo an action
+    */
+    void undo() {
+        
+        // If we can't undo an action, return
+        if (!actions.canPop()) return;
+
+        // Undo the last action
+        SolAction action = actions.pop();
+        action.paired[0].active = true;
+        action.paired[1].active = true;
+
+        // Penalize the player
+        board.score -= 50;
+        undos++;
+    }
+
+    /**
+        Calculate the bounds of the field
+    */
+    AABB calculateBounds() {
+        vec3i start = vec3i(int.max);
+        vec3i end = vec3i(0);
+        foreach(tile; tiles) {
+            // Skip tiles we can't see
+            if (!tile.active) continue;
+
+            if (tile.position.x < start.x) start.x = tile.position.x;
+            if (tile.position.y < start.y) start.y = tile.position.y;
+            if (tile.position.z < start.z) start.z = tile.position.z;
+
+            if (tile.position.x > end.x) end.x = tile.position.x;
+            if (tile.position.y > end.y) end.y = tile.position.y;
+            if (tile.position.z > end.z) end.z = tile.position.z;
+        }
+
+        return AABB(
+            vec3(start.x*(MahjongTileWidth/2), start.y*(MahjongTileHeight/2), start.z*MahjongTileLength), 
+            vec3(end.x*(MahjongTileWidth/2), end.y*(MahjongTileHeight/2), end.z*MahjongTileLength)
+        );
     }
 }

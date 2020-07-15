@@ -53,7 +53,6 @@ enum MahjongScaleFactor = 1/MahjongTileWidth;
     - Fox Mei Tile (Tile with drawing of Mei on it)
 */
 enum TileType : int {
-    
     /// 🀙
     Dot1,
     
@@ -214,7 +213,10 @@ enum TileType : int {
     SuitsAndBonusCount = Joker+1,
 
     /// Count of tiles in the extended set (Tiles added by Kitsune Mahjong)
-    ExtendedSetTileCount = Mei+1
+    ExtendedSetTileCount = Mei+1,
+
+    // An unmarked tile without any face
+    Unmarked = -1,
 }
 
 /**
@@ -241,6 +243,7 @@ private {
             mahjongAtlas.add("TileCap", buildPath("assets", "tiles", tileset, "TileCap.png"));
             mahjongAtlas.add("TileSide", buildPath("assets", "tiles", tileset, "TileSide.png"));
             mahjongAtlas.add("TileBack", buildPath("assets", "tiles", tileset, "TileBack.png"));
+            mahjongAtlas.add("TileUnmarked", buildPath("assets", "tiles", tileset, "TileBack.png"));
             foreach(i; 0..cast(int)TileType.ExtendedSetTileCount) {    
                 mahjongAtlas.add(
                     "Tile%s".format(text(cast(TileType)i)), 
@@ -274,7 +277,7 @@ void changeTileset(string tileset) {
     A mahjong tile
 */
 class MahjongTile : Tile {
-private:
+protected:
     TileMesh mesh;
     TileType type_;
 
@@ -282,7 +285,7 @@ public:
     /**
         Constructor
     */
-    this(TileType type) {
+    this(TileType type = TileType.Unmarked) {
         super();
         this.type_ = type;
         mesh = new TileMesh(
@@ -303,10 +306,18 @@ public:
     }
 
     /**
+        Change the type of the tile
+    */
+    void changeType(TileType type) {
+        this.type_ = type;
+        mesh.setTexture(TileMeshSide.Front, mahjongAtlas["Tile"~type.text]);
+    }
+
+    /**
         Draws the tile
     */
     override void draw(Camera camera) {
-        mesh.draw(camera, transform);
+        mesh.draw(camera, transform.matrix);
     }
 
     /**

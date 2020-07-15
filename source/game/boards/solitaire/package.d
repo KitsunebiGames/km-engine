@@ -5,7 +5,9 @@
     Authors: Luna Nielsen
 */
 module game.boards.solitaire;
-import game.boards.solitaire.field;
+public import game.boards.solitaire.field;
+public import game.boards.solitaire.tile;
+public import game.boards.solitaire.tilegen;
 import game.boards;
 import game.tiles;
 import engine;
@@ -24,60 +26,6 @@ private:
     BoardCam camera;
     Camera2D ui;
 
-    vec2i lastSelected = vec2i(int.min, int.min);
-    vec2i selected = vec2i(int.min, int.min);
-
-    void updateGameplay() {
-        vec2i clicked = playingField.getClicked(camera.camera, Mouse.position, vec2(GameWindow.width, GameWindow.height));
-        if (clicked.x != int.min) {
-            
-            // Clicking on the same tile twice counts as resetting the selection
-            if (clicked == selected) {
-                this.resetSelection();
-                return;
-            }
-
-            // Can't select unplayable tiles
-            if (!playingField.isPlayable(clicked)) return;
-
-
-            lastSelected = selected;
-            selected = clicked;
-            playingField[selected].selected = true;
-
-            if (selected.x != int.min && lastSelected.x != int.min) {
-
-                // Handle tiles that don't match
-                if (playingField[selected].type != playingField[lastSelected].type) {
-
-                    // Reset their scale
-                    this.resetSelection();
-                    return;
-                }
-
-                // Destroy both tiles, they are the same
-                parent.june.tileCleared();
-                playingField[selected].taken = true;
-                playingField[lastSelected].taken = true;
-                selected = vec2i(int.min, int.min);
-                lastSelected = vec2i(int.min, int.min);
-            }
-        }
-    }
-
-    void resetSelection() {
-
-        if (selected.x != int.min) {
-            playingField[selected].selected = false;
-            selected = vec2i(int.min, int.min);
-        }
-
-        if (lastSelected.x != int.min) {
-            playingField[lastSelected].selected = false;
-            lastSelected = vec2i(int.min, int.min);
-        }
-    }
-
 public:
 
     /**
@@ -89,25 +37,34 @@ public:
         // Initialize mahjong tiles
         initMahjong("default");
 
-        playingField = new Field();
+        playingField = new Field(this);
         ui = new Camera2D();
         camera = new BoardCam();
+        camera.setFocus(playingField.calculateBounds.center, true);
     }
 
 override:
 
     void update() {
         camera.update();
-
         playingField.update();
 
         if (Mouse.isButtonClicked(MouseButton.Left)) {
-            updateGameplay();
+
+            // Do tile pairing
+            SolTile tile = playingField.getTileHover(camera.camera, Mouse.position, vec2(GameWindow.width, GameWindow.height));
+            if (tile !is null) {
+                if (playingField.pair(tile)) {
+                    parent.june.tileCleared();
+                }
+            }
+
+            // Set the focus to the new bounds center (if the play area shrinks)
+            camera.setFocus(playingField.calculateBounds().center);
         }
 
         if (Mouse.isButtonClicked(MouseButton.Right)) {
-            this.resetSelection();
-            playingField.shuffle();
+            playingField.undo();
         }
     }
 

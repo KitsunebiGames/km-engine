@@ -5,9 +5,9 @@
     Authors: Luna Nielsen
 */
 module game.boards.solitaire.tilegen;
+import game.boards.solitaire;
 import engine;
 import game;
-import game.boards.solitaire.tile;
 import game.tiles;
 import std.random;
 import std.conv;
@@ -88,23 +88,23 @@ public:
     }
 
     /**
-        Gets the next tile
+        Gets the next tile type
     */
-    SolTile getNext() {
+    TileType getNext() {
         // Generate and find next pair if we're on an uneven generation step
         if (genIndex == 1) {
-            SolTile nextTile = new SolTile(currentType);
+            TileType curType = currentType;
             generatedCount[currentType]++;
 
             setNextType(GenMode.Cycles);
             genIndex = 0;
-            return nextTile;
+            return curType;
         }
 
         // We're on an even step just get the next tile
         genIndex++;
         generatedCount[currentType]++;
-        return new SolTile(currentType);
+        return currentType;
     }
 
     /**

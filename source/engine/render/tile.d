@@ -301,12 +301,12 @@ public:
     /**
         Draws the tile
     */
-    void draw(Camera camera, Transform transform) {
+    void draw(Camera camera, mat4 transform) {
         
         bind();
         TileShader.use();
         atlas.bind();
-        TileShader.setUniform(TileShaderMVP, camera.matrix*transform.matrix);
+        TileShader.setUniform(TileShaderMVP, camera.matrix*transform);
         glDrawArrays(GL_TRIANGLES, 0, cast(int)verts.length);
     }
 
