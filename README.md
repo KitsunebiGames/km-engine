@@ -11,6 +11,9 @@ Kitsune Mahjong requires the following dependencies to be present to work:
  * OpenAL Driver (or openal-soft)
  * OpenGL Driver
  * GLFW3
+ * libogg
+ * libvorbis
+ * libvorbisfile
 
 ## Debugging
 To debug the game run
