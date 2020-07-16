@@ -10,6 +10,7 @@ import engine;
 import game;
 import game.tiles;
 import std.random;
+import std.algorithm.mutation;
 
 /**
     Data used to initialize a field
@@ -72,29 +73,20 @@ private:
 
         int pairsLeft = cast(int)tiles.length/2;
         while (pairsLeft > 0) {
-            int idx = uniform(0, cast(int)tiles.length);
-            int idx2 = uniform(0, cast(int)tiles.length);
 
-            // Skip tiles that are the same
-            if (idx == idx2) continue;
+            // Find the valid pairs around
+            auto validPairs = findValidPairs();
+            auto validPair = validPairs[uniform(0, cast(int)validPairs.length)];
 
-            // Skip inactive tiles
-            if (!tiles[idx].active || !tiles[idx2].active) continue;
+            // Change the type of the tiles to the next pair in the generator
+            validPair[0].changeType(generator.getNext());
+            validPair[1].changeType(generator.getNext());
 
-            // We'll have to try again we didn't find a free pair
-            if (tiles[idx].isAvailable && tiles[idx2].isAvailable) {
+            // Deactivate the tiles so we don't try setting them again
+            validPair[0].deactivate();
+            validPair[1].deactivate();
 
-                // Deactivate the tiles so we don't try setting them again
-                tiles[idx].deactivate();
-                tiles[idx2].deactivate();
-
-                // Change the type of the tiles to the next pair in the generator
-                tiles[idx].changeType(generator.getNext());
-                tiles[idx2].changeType(generator.getNext());
-
-                // We've just matched 2 tiles, reflect that in how many there's left to "solve"
-                pairsLeft--;
-            }
+            pairsLeft--;
         }
 
         // Re-activate all the tiles.
@@ -109,6 +101,37 @@ private:
             tiles ~= newTile;
         }
         fillBoard();
+    }
+    
+    SolTile[2][] findValidPairs() {
+        SolTile[2][] validPairs;
+        foreach(i; 0..tiles.length) {
+            
+            // Skip incative tiles
+            if (!tiles[i].active) continue;
+
+            foreach_reverse(j; 0..tiles.length) {
+
+                // Skip incative tiles
+                if (!tiles[j].active) continue;
+
+                // A tile and itself is a bad hint
+                if (tiles[i] == tiles[j]) continue;
+
+                // Skip tiles we've already hinted
+                if (tiles[i].hinted || tiles[j].hinted) continue;
+
+                // Skip tiles the player can't play
+                if (!tiles[i].isAvailable || !tiles[j].isAvailable) continue;
+
+                // If they match then we mark them as hints and return
+                if (tiles[i].type == tiles[j].type) {
+                    validPairs ~= [tiles[i], tiles[j]];
+                }
+
+            }
+        }
+        return validPairs;
     }
 
 public:
@@ -200,34 +223,8 @@ public:
     void hint() {
         if (!canHint) return;
         canHint = false;
-        SolTile[2][] validPairs;
 
-        foreach(i; 0..tiles.length) {
-            
-            // Skip incative tiles
-            if (!tiles[i].active) continue;
-
-            foreach_reverse(j; 0..tiles.length) {
-
-                // Skip incative tiles
-                if (!tiles[j].active) continue;
-
-                // A tile and itself is a bad hint
-                if (tiles[i] == tiles[j]) continue;
-
-                // Skip tiles we've already hinted
-                if (tiles[i].hinted || tiles[j].hinted) continue;
-
-                // Skip tiles the player can't play
-                if (!tiles[i].isAvailable || !tiles[j].isAvailable) continue;
-
-                // If they match then we mark them as hints and return
-                if (tiles[i].type == tiles[j].type) {
-                    validPairs ~= [tiles[i], tiles[j]];
-                }
-
-            }
-        }
+        auto validPairs = findValidPairs();
 
         // We've hit a dead end
         if (validPairs.length == 0) {
