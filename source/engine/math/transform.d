@@ -16,12 +16,12 @@ private:
 
     // Generated matrix
     mat4 g_matrix() {
-        return rotation.to_matrix!(4, 4) * mat4.translation(position) * mat4.scaling(scale.x, scale.y, scale.z);
+        return mat4.translation(position) * rotation.to_matrix!(4, 4) * mat4.scaling(scale.x, scale.y, scale.z);
     }
 
     // Generated matrix
     mat4 g_matrix_ns() {
-        return rotation.to_matrix!(4, 4) * mat4.translation(position);
+        return mat4.translation(position) * rotation.to_matrix!(4, 4);
     }
 
 public:
@@ -61,6 +61,11 @@ public:
         Position of transform
     */
     vec3 position;
+
+    /**
+        Origin of transform
+    */
+    vec3 origin;
 
     /**
         Scale of transform

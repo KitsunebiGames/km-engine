@@ -71,6 +71,11 @@ override:
             playingField.undo();
             camera.setFocus(playingField.calculateBounds().center);
         }
+
+        if (Mouse.isButtonClicked(MouseButton.Middle)) {
+            playingField.hint();
+            camera.setFocus(playingField.calculateBounds().center);
+        }
     }
 
     void draw() {

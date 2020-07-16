@@ -58,6 +58,7 @@ public:
 */
 class BoardCam {
 private:
+    Transform cameraBase;
     Transform cameraPivot;
     Transform cameraArm;
     vec3 target;
@@ -72,9 +73,9 @@ public:
         rotation = vec3(0);
 
         // Set up camera
-        cameraPivot = new Transform();
+        cameraBase = new Transform();
+        cameraPivot = new Transform(cameraBase);
         cameraArm = new Transform(cameraPivot);
-        cameraPivot.position.z = -1;
         camera = new Camera(cameraArm);
 
         // TODO: make these customizable
@@ -93,7 +94,7 @@ public:
     void setFocus(vec3 area, bool instant = false) {
         target = -area;
         if (instant) {
-            cameraPivot.position = target;
+            cameraBase.position = target;
         }
     }
 
@@ -114,7 +115,7 @@ public:
         cameraPivot.rotation = quat.euler_rotation(rotation.x, rotation.y, rotation.z);
 
         // Smoothly move the camera to the target
-        cameraPivot.position = cameraPivot.position.dampen(target, deltaTime);
+        cameraBase.position = cameraBase.position.dampen(target, deltaTime);
     }
 
 }

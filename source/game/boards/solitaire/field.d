@@ -49,6 +49,8 @@ private:
     // Actions
     ActionStack!SolAction actions;
     int undos;
+    bool canHint = true;
+    SolTile[2] hints;
 
     SolTile current;
     SolTile previous;
@@ -83,8 +85,8 @@ private:
             if (tiles[idx].isAvailable && tiles[idx2].isAvailable) {
 
                 // Deactivate the tiles so we don't try setting them again
-                tiles[idx].active = false;
-                tiles[idx2].active = false;
+                tiles[idx].deactivate();
+                tiles[idx2].deactivate();
 
                 // Change the type of the tiles to the next pair in the generator
                 tiles[idx].changeType(generator.getNext());
@@ -96,13 +98,14 @@ private:
         }
 
         // Re-activate all the tiles.
-        foreach(tile; tiles) tile.active = true;
+        foreach(tile; tiles) tile.activate();
     }
 
-    void generateBoard() {
-        foreach(i; 0..144) {
+    void generateBoard(FieldData formation) {
+        this.name = formation.name;
+        foreach(slot; formation.slots) {
             SolTile newTile = new SolTile(this, TileType.Unmarked);
-            newTile.position = vec3i((i%18)*2, (i/18)*2, 0);
+            newTile.position = slot;
             tiles ~= newTile;
         }
         fillBoard();
@@ -123,7 +126,9 @@ public:
     this(SolitaireBoard board) {
         this.board = board;
         actions = new ActionStack!SolAction();
-        this.generateBoard();
+
+        import game.boards.solitaire.parser : parse;
+        this.generateBoard(parse(import("fields/turtle.field")));
     }
 
     /**
@@ -190,6 +195,55 @@ public:
     }
     
     /**
+        Get a hint
+    */
+    void hint() {
+        if (!canHint) return;
+        canHint = false;
+        SolTile[2][] validPairs;
+
+        foreach(i; 0..tiles.length) {
+            
+            // Skip incative tiles
+            if (!tiles[i].active) continue;
+
+            foreach_reverse(j; 0..tiles.length) {
+
+                // Skip incative tiles
+                if (!tiles[j].active) continue;
+
+                // A tile and itself is a bad hint
+                if (tiles[i] == tiles[j]) continue;
+
+                // Skip tiles we've already hinted
+                if (tiles[i].hinted || tiles[j].hinted) continue;
+
+                // Skip tiles the player can't play
+                if (!tiles[i].isAvailable || !tiles[j].isAvailable) continue;
+
+                // If they match then we mark them as hints and return
+                if (tiles[i].type == tiles[j].type) {
+                    validPairs ~= [tiles[i], tiles[j]];
+                }
+
+            }
+        }
+
+        // We've hit a dead end
+        if (validPairs.length == 0) {
+            canHint = true;
+            return;
+        }
+
+        // Find a random pair and hint those
+        size_t idx = uniform(0, validPairs.length);
+        validPairs[idx][0].hint();
+        validPairs[idx][1].hint();
+        hints = [validPairs[idx][0], validPairs[idx][1]];
+        board.score -= 100;
+    }
+
+    /**
         Select a tile for pairing
     */
     bool pair(SolTile tile) {
@@ -214,10 +268,11 @@ public:
         // If tiles match then 
         if (previous.type == current.type) {
             actions.push(SolAction([current, previous]));
-            current.active = false;
-            previous.active = false;
+            current.deactivate();
+            previous.deactivate();
             board.score += current.scoreWorth;
             this.resetSelection();
+            canHint = true;
             return true;
         }
 
@@ -234,10 +289,22 @@ public:
         // If we can't undo an action, return
         if (!actions.canPop()) return;
 
+        // Deactivate any hints there were before
+        if (hints[0] !is null) {
+            hints[0].unhint();
+            hints[0] = null;
+
+            hints[1].unhint();
+            hints[1] = null;
+        }
+
+        // Allow hinting again
+        canHint = true;
+
         // Undo the last action
         SolAction action = actions.pop();
-        action.paired[0].active = true;
-        action.paired[1].active = true;
+        action.paired[0].activate();
+        action.paired[1].activate();
 
         // Penalize the player
         board.score -= 50;
