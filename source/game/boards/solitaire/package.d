@@ -81,4 +81,8 @@ override:
     void draw() {
         playingField.draw(camera.camera);
     }
+
+    string name() {
+        return playingField.name;
+    }
 }

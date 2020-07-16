@@ -103,6 +103,6 @@ public:
     }
 
     override void onActivate() {
-        GameWindow.title = "Kitsune Mahjong: "~targetGame;
+        GameWindow.title = "Kitsune Mahjong: "~this.board.name;
     }
 }

@@ -51,6 +51,11 @@ public:
         Draw the game board
     */
     abstract void draw();
+
+    /**
+        Name of the board
+    */
+    abstract string name();
 }
 
 /**
