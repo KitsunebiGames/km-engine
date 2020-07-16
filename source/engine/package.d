@@ -13,6 +13,7 @@ public import engine.audio;
 public import engine.net;
 
 import bindbc.glfw;
+import bindbc.openal;
 
 /**
     Initialize the game engine
@@ -23,6 +24,11 @@ void initEngine() {
     initGLFW();
     glfwInit();
     AppLog.info("Engine", "GLFW initialized...");
+
+    // Initialize OpenAL
+    initOAL();
+    initAudioEngine();
+    AppLog.info("Engine", "Audio Engine initialized...");
 
     // Create window
     GameWindow = new Window();
@@ -54,6 +60,15 @@ void closeEngine() {
     glfwTerminate();
     unloadGLFW();
     unloadOpenGL();
+}
+
+private void initOAL() {
+    auto support = loadOpenAL();
+    if (support == ALSupport.badLibrary) {
+        AppLog.fatal("Engine", "Could not load OpenAL, bad library!");
+    } else if (support == ALSupport.noLibrary) {
+        AppLog.fatal("Engine", "Could not load OpenAL, no library found!");
+    }
 }
 
 private void initGLFW() {
