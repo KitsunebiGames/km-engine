@@ -68,12 +68,35 @@ private:
         }
     }
 
-    void fillBoard() {
+    void fillBoard(SolTile[] set) {
         TileGenerator generator = new TileGenerator();
 
         int tries = 0;
-        int pairsLeft = cast(int)tiles.length/2;
+        int pairsLeft = cast(int)set.length/2;
         while (pairsLeft > 0) {
+
+            SolTile[] tiles = findAvailable(set);
+
+            // If we've tried 100 times or we have no available tiles
+            if (tiles.length <= 1) {
+                
+                // In debug mode let the developer know it had to retry
+                debug AppLog.info("debug", "Invalid board state, retrying...");
+                
+                // The board entered a state where it's unwinnable, retry.
+                // Reset the state so we can try again
+                generator.clear();
+                tries = 0;
+                pairsLeft = cast(int)tiles.length/2;
+
+                // Reactivate and change tile type to unmarked
+                foreach(tile; tiles) {
+                    tile.activate();
+                    tile.changeType(TileType.Unmarked);
+                }
+                continue;
+            }
+
             int idx = uniform(0, cast(int)tiles.length);
             int idx2 = uniform(0, cast(int)tiles.length);
 
@@ -82,8 +105,6 @@ private:
 
             // Skip inactive tiles
             if (!tiles[idx].active || !tiles[idx2].active) continue;
-
-            tries++;
 
             // We'll have to try again we didn't find a free pair
             if (tiles[idx].isAvailable && tiles[idx2].isAvailable) {
@@ -102,36 +123,16 @@ private:
                 pairsLeft--;
                 continue;
             }
-
-            // If we've tried 100 times or over, let's be a bit more thorough
-            if (tries >= 100) {
-
-                // Check if there is stuff to match
-                auto validPairs = findValidPairs(tiles).length;
-                
-                // There's still valid pairs to make in this configuration, try again
-                if (validPairs > 0) {
-                    tries = 0;
-                    continue;
-                }
-                
-                // The board entered a state where it's unwinnable, retry.
-                // Reset the state so we can try again
-                generator = new TileGenerator();
-                tries = 0;
-                pairsLeft = cast(int)tiles.length/2;
-
-                // Reactivate and change tile type to unmarked
-                foreach(tile; tiles) {
-                    tile.activate();
-                    tile.changeType(TileType.Unmarked);
-                }
-                continue;
-            }
         }
 
         // Re-activate all the tiles.
         foreach(tile; tiles) tile.activate();
+    }
+
+    void shuffleBoard() {
+        SolTile[] shuffleSet = findActive(tiles);
+
+        // TODO: implement shuffling algorithm
     }
 
     void generateBoard(FieldData formation) {
@@ -141,13 +142,21 @@ private:
             newTile.position = slot;
             tiles ~= newTile;
         }
-        fillBoard();
+        fillBoard(tiles);
+    }
+
+    SolTile[] findActive(SolTile[] inTiles) {
+        SolTile[] available;
+        foreach(tile; inTiles) {
+            if (tile.active) available ~= tile;
+        }
+        return available;
     }
 
     SolTile[] findAvailable(SolTile[] inTiles) {
         SolTile[] available;
         foreach(tile; inTiles) {
-            if (tile.isAvailable) available ~= tile;
+            if (tile.isAvailable(inTiles)) available ~= tile;
         }
         return available;
     }
@@ -327,7 +336,7 @@ public:
             tile.activate();
             tile.changeType(TileType.Unmarked);
         }
-        fillBoard();
+        fillBoard(tiles);
     }
 
     /**
