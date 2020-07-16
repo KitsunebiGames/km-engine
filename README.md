@@ -3,6 +3,9 @@ Kitsune Mahjong is an open source Mahjong Solitaire game, inspired by [Kyodai Ma
 
 Over time various mini-games using the Mahjong tiles will be added.
 
+## Contributing
+I will not be accepting any pull-requests for this repository.
+
 ## Dependencies
 Kitsune Mahjong requires the following dependencies to be present to work:
  * OpenAL Driver (or openal-soft)
