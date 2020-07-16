@@ -68,7 +68,7 @@ private:
         }
     }
 
-    void fillBoard(SolTile[] set) {
+    void fillBoard(ref SolTile[] set) {
         TileGenerator generator = new TileGenerator();
 
         int tries = 0;
@@ -85,14 +85,14 @@ private:
                 
                 // The board entered a state where it's unwinnable, retry.
                 // Reset the state so we can try again
-                generator.clear();
+                generator = new TileGenerator();
                 tries = 0;
                 pairsLeft = cast(int)set.length/2;
 
                 // Reactivate and change tile type to unmarked
-                foreach(tile; tiles) {
-                    tile.activate();
+                foreach(tile; set) {
                     tile.changeType(TileType.Unmarked);
+                    tile.activate();
                 }
                 continue;
             }
