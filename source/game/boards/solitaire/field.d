@@ -77,7 +77,8 @@ private:
 
             SolTile[] tiles = findAvailable(set);
 
-            // If we've tried 100 times or we have no available tiles
+            // We can't match one or less available tile (tiles are stacked on each other?)
+            // Therefore this board state is impossible to win, retry.
             if (tiles.length <= 1) {
                 
                 // In debug mode let the developer know it had to retry
@@ -97,6 +98,7 @@ private:
                 continue;
             }
 
+            // Tiles to try among the available tiles
             int idx = uniform(0, cast(int)tiles.length);
             int idx2 = uniform(0, cast(int)tiles.length);
 
