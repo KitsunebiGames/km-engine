@@ -87,7 +87,7 @@ private:
                 // Reset the state so we can try again
                 generator.clear();
                 tries = 0;
-                pairsLeft = cast(int)tiles.length/2;
+                pairsLeft = cast(int)set.length/2;
 
                 // Reactivate and change tile type to unmarked
                 foreach(tile; tiles) {
