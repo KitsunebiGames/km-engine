@@ -119,13 +119,20 @@ public:
         Gets whether the tile is available to be moved
     */
     bool isAvailable() {
+        return isAvailable(parent.tiles);
+    }
+
+    /**
+        Gets whether the tile is available to be moved
+    */
+    bool isAvailable(ref SolTile[] pTiles) {
 
         // Inactive tiles aren't available
         if (!this.isActive) return false;
 
         bool isBlockedOnLeft;
         bool isBlockedOnRight;
-        foreach(SolTile other; parent.tiles) {
+        foreach(SolTile other; pTiles) {
 
             // Skip self and inactive tiles
             if (other == this || !other.isActive) continue;
