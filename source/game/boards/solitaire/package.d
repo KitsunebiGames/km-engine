@@ -26,6 +26,8 @@ private:
     BoardCam camera;
     Camera2D ui;
 
+    bool wasRPressed;
+
 public:
 
     /**
@@ -76,6 +78,11 @@ override:
             playingField.hint();
             camera.setFocus(playingField.calculateBounds().center);
         }
+
+        if (!wasRPressed && Keyboard.isKeyPressed(Key.KeyR)) {
+            playingField.refillBoard();
+        }
+        wasRPressed = Keyboard.isKeyPressed(Key.KeyR); 
     }
 
     void draw() {

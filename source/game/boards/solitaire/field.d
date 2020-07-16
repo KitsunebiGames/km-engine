@@ -71,22 +71,63 @@ private:
     void fillBoard() {
         TileGenerator generator = new TileGenerator();
 
+        int tries = 0;
         int pairsLeft = cast(int)tiles.length/2;
         while (pairsLeft > 0) {
+            int idx = uniform(0, cast(int)tiles.length);
+            int idx2 = uniform(0, cast(int)tiles.length);
 
-            // Find the valid pairs around
-            auto validPairs = findValidPairs();
-            auto validPair = validPairs[uniform(0, cast(int)validPairs.length)];
+            // Skip tiles that are the same
+            if (idx == idx2) continue;
 
-            // Change the type of the tiles to the next pair in the generator
-            validPair[0].changeType(generator.getNext());
-            validPair[1].changeType(generator.getNext());
+            // Skip inactive tiles
+            if (!tiles[idx].active || !tiles[idx2].active) continue;
 
-            // Deactivate the tiles so we don't try setting them again
-            validPair[0].deactivate();
-            validPair[1].deactivate();
+            tries++;
 
-            pairsLeft--;
+            // We'll have to try again we didn't find a free pair
+            if (tiles[idx].isAvailable && tiles[idx2].isAvailable) {
+                
+                tries = 0;
+
+                // Deactivate the tiles so we don't try setting them again
+                tiles[idx].deactivate();
+                tiles[idx2].deactivate();
+
+                // Change the type of the tiles to the next pair in the generator
+                tiles[idx].changeType(generator.getNext());
+                tiles[idx2].changeType(generator.getNext());
+
+                // We've just matched 2 tiles, reflect that in how many there's left to "solve"
+                pairsLeft--;
+                continue;
+            }
+
+            // If we've tried 100 times or over, let's be a bit more thorough
+            if (tries >= 100) {
+
+                // Check if there is stuff to match
+                auto validPairs = findValidPairs(tiles).length;
+                
+                // There's still valid pairs to make in this configuration, try again
+                if (validPairs > 0) {
+                    tries = 0;
+                    continue;
+                }
+                
+                // The board entered a state where it's unwinnable, retry.
+                // Reset the state so we can try again
+                generator = new TileGenerator();
+                tries = 0;
+                pairsLeft = cast(int)tiles.length/2;
+
+                // Reactivate and change tile type to unmarked
+                foreach(tile; tiles) {
+                    tile.activate();
+                    tile.changeType(TileType.Unmarked);
+                }
+                continue;
+            }
         }
 
         // Re-activate all the tiles.
@@ -102,27 +143,27 @@ private:
         }
         fillBoard();
     }
+
+    SolTile[] findAvailable(SolTile[] inTiles) {
+        SolTile[] available;
+        foreach(tile; inTiles) {
+            if (tile.isAvailable) available ~= tile;
+        }
+        return available;
+    }
     
-    SolTile[2][] findValidPairs() {
+    SolTile[2][] findValidPairs(SolTile[] inTiles) {
         SolTile[2][] validPairs;
+        SolTile[] tiles = findAvailable(inTiles);
         foreach(i; 0..tiles.length) {
-            
-            // Skip incative tiles
-            if (!tiles[i].active) continue;
 
             foreach_reverse(j; 0..tiles.length) {
-
-                // Skip incative tiles
-                if (!tiles[j].active) continue;
 
                 // A tile and itself is a bad hint
                 if (tiles[i] == tiles[j]) continue;
 
                 // Skip tiles we've already hinted
                 if (tiles[i].hinted || tiles[j].hinted) continue;
-
-                // Skip tiles the player can't play
-                if (!tiles[i].isAvailable || !tiles[j].isAvailable) continue;
 
                 // If they match then we mark them as hints and return
                 if (tiles[i].type == tiles[j].type) {
@@ -224,7 +265,7 @@ public:
         if (!canHint) return;
         canHint = false;
 
-        auto validPairs = findValidPairs();
+        auto validPairs = findValidPairs(tiles);
 
         // We've hit a dead end
         if (validPairs.length == 0) {
@@ -276,6 +317,17 @@ public:
         // Tiles did not match, reset selection
         this.resetSelection();
         return false;
+    }
+
+    /**
+        Refills the board
+    */
+    void refillBoard() {
+        foreach(tile; tiles) {
+            tile.activate();
+            tile.changeType(TileType.Unmarked);
+        }
+        fillBoard();
     }
 
     /**
