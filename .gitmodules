@@ -1,0 +1,3 @@
+[submodule "Assets"]
+	path = assets
+	url = https://github.com/Member1221/kitsune-mahjong-assets
