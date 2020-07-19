@@ -27,3 +27,11 @@ void initAudioEngine() {
 void setListenerPosition(vec3 position) {
     alListener3f(AL_POSITION, position.x, position.y, position.z);
 }
+/**
+    Set the position of the listener
+*/
+vec3 getListenerPosition() {
+    float x, y, z;
+    alGetListener3f(AL_POSITION, &x, &y, &z);
+    return vec3(x, y, z);
+}

@@ -57,6 +57,14 @@ public:
         alSourcePlay(sourceId);
     }
 
+    void setPitch(float pitch) {
+        alSourcef(sourceId, AL_PITCH, pitch);
+    }
+
+    void setGain(float gain) {
+        alSourcef(sourceId, AL_GAIN, gain);
+    }
+
     /**
         Stop sound
     */
