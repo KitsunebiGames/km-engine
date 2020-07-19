@@ -10,7 +10,7 @@ import std.file;
 import std.format;
 import core.stdc.stdlib : exit;
 
-static Logger AppLog;
+__gshared Logger AppLog;
 
 /**
     A logger

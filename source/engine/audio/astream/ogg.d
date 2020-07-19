@@ -21,6 +21,8 @@ private:
     int word;
     int signed;
 
+    int bitrate_;
+
 
     void verifyError(int error) {
         switch(error) {
@@ -55,6 +57,8 @@ public:
         auto info = ov_info(&this.file, -1);
         enforce(info.channels <= 2, "Too many channels in OGG Vorbis file");
 
+        this.bitrate_ = info.rate;
+
         // Set info about this file
         this.channels = info.channels;
         if (this.channels == 1) {
@@ -66,13 +70,25 @@ public:
         signed = format == Format.Mono16 || format == Format.Stereo16 ? 1 : 0;
     }
 
-override:
-    ptrdiff_t readSamples(ref ubyte[] toArray) {
+    ptrdiff_t iReadSamples(ref ubyte[] toArray, size_t readLength) {
 
         // Read a verify the success of the read
-        ptrdiff_t readAmount = cast(ptrdiff_t)ov_read(&file, cast(byte*)toArray.ptr, cast(int)toArray.length, 0, word, signed, &section);
+        ptrdiff_t readAmount = cast(ptrdiff_t)ov_read(&file, cast(byte*)toArray.ptr, cast(int)readLength, 0, word, signed, &section);
         assert(readAmount >= 0, "An error occured trying to read from the ogg vorbis stream");
         return readAmount;
+    }
+
+override:
+    ptrdiff_t readSamples(ref ubyte[] toArray) {
+        ubyte[] tmpBuf = new ubyte[4096];
+        ptrdiff_t buffOffset;
+        ptrdiff_t buffLength;
+        do {
+            buffLength = iReadSamples(tmpBuf, toArray.length-buffOffset);
+            toArray[buffOffset..buffOffset+buffLength] = tmpBuf[0..buffLength];
+            buffOffset += buffLength; 
+        } while(buffOffset < toArray.length && buffLength > 0);
+        return buffOffset;
     }
 
     /**
@@ -100,6 +116,6 @@ override:
         Gets the bitrate
     */
     size_t bitrate() {
-        return ov_bitrate(&file, -1);
+        return bitrate_;
     }
 }

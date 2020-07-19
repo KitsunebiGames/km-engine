@@ -16,3 +16,4 @@ kitsune-mahjong-test-*
 *.lst
 *.*~
 dub.selections.json
+log.txt

@@ -56,6 +56,8 @@ public:
             readCount = readSamples(data);
             outData ~= data[0..readCount];
         } while(readCount > 0);
+        
+        if (canSeek) seek(0);
         return outData;
     }
 

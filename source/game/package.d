@@ -55,6 +55,9 @@ void gameLoop() {
         GameWindow.swapBuffers();
         GameWindow.update();
     }
+    
+    // Pop all game states so we can call destructors
+    GameStateManager.popAll();
 }
 
 /**
