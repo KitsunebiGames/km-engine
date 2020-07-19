@@ -77,6 +77,7 @@ public:
         background = new Texture("assets/textures/backgrounds/forest.jpg");
 
         june = new June();
+        GamePlaylist.play();
     }
 
     /**
@@ -86,6 +87,7 @@ public:
 
     override void update() {
         this.board.update();
+        GamePlaylist.update();
 
         june.update();
     }
