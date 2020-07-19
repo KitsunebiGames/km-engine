@@ -11,6 +11,162 @@ import bindbc.openal;
 import engine.math;
 import std.math : isFinite;
 import engine;
+import events;
+
+/**
+    The game's main playlist instance
+*/
+__gshared Playlist GamePlaylist;
+
+/**
+    Initializes the game's main playlist instance
+*/
+void initPlaylist() {
+    GamePlaylist = new Playlist();
+    GamePlaylist.addMusicFrom("assets/music/");
+}
+
+/**
+    A playlist of music
+*/
+class Playlist {
+private:
+    bool isStopped = true;
+    size_t current;
+    Music[] songs;
+
+    // Smarter shuffle function that avoids playing the same track twice
+    size_t smartShuffle() {
+        import std.random : uniform;
+        size_t value;
+        do {
+            value = uniform(0, songs.length);
+        } while(value != current);
+        return value;
+    }
+
+    void nextSong() {
+
+        // If we skip to the next song stop the current one from playing
+        if (songs[current].isPlaying) {
+            songs[current].stop();
+        }
+
+        // Next song is the same
+        if (repeatOne) {
+            songs[current].play();
+            return;
+        }
+
+        if (shuffle) {
+
+            // Shuffle to next song using the "smart" algorithm
+            current = smartShuffle();
+        } else {
+            // Increment song id
+            current++;
+
+            // Constrain ids to the length of the song array
+            current %= songs.length;
+        }
+
+        // Play the new song
+        songs[current].play();
+        onSongChange(cast(void*)this, songs[current].getInfo());
+    }
+
+public:
+
+    ~this() {
+        foreach(song; songs) {
+            destroy(song);
+        }
+    }
+
+    /**
+        Repeat a single song
+    */
+    bool repeatOne;
+
+    /**
+        Shuffle songs
+    */
+    bool shuffle;
+
+    /**
+        Event called when song changes
+    */
+    Event!AudioInfo onSongChange = new Event!AudioInfo();
+
+    /**
+        Add Music to the playlist
+    */
+    void addMusic(Music music) {
+        songs ~= music;
+
+        // We want to roll over to the first song so set it to the last
+        current = songs.length-1;
+    }
+
+    /**
+        Adds all .ogg files that could be found in a path recursively
+    */
+    void addMusicFrom(string path) {
+        import std.file : dirEntries, SpanMode;
+        import std.algorithm : filter, endsWith;
+        foreach(entry; dirEntries(path, SpanMode.depth).filter!(f => f.name.endsWith(".ogg"))) {
+            addMusic(new Music(entry));
+            AppLog.info("Playlist", "Added song %s...", entry);
+        }
+    }
+
+    /**
+        Play the playlist
+    */
+    void play() {
+        isStopped = false;
+        nextSong();
+    }
+
+    /**
+        Stop music from playing
+    */
+    void stop() {
+        isStopped = true;
+        songs[current].stop();
+    }
+
+    /**
+        Gets whether the current song is playing
+    */
+    bool isCurrentSongPlaying() {
+        return songs[current].isPlaying();
+    }
+
+    /**
+        Play next song
+    */
+    void next() {
+
+        // Avoid accidentally starting the playlist again
+        if (isStopped) return;
+
+        // Play the next song in the playlist
+        nextSong();
+    }
+
+    /**
+        Updates the playlist
+    */
+    void update() {
+
+        // Skip if we're stopped
+        if (isStopped) return;
+
+        // Play next song if the current one is stopped
+        if (!isCurrentSongPlaying) next();
+    }
+}
 
 /**
     A stream of audio that can be played
@@ -201,6 +357,20 @@ public:
     void stop() {
         running = false;
         alSourceStop(sourceId);
-        playerThread.join();
+        if (playerThread !is null) playerThread.join();
+    }
+
+    /**
+        Gets whether a song is currently playing
+    */
+    bool isPlaying() {
+        return running;
+    }
+
+    /**
+        Get info about the music
+    */
+    AudioInfo getInfo() {
+        return stream.getInfo();
     }
 }

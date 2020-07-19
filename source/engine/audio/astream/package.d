@@ -9,6 +9,7 @@ import engine.audio.astream.ogg;
 import std.path;
 import bindbc.openal;
 import std.format;
+import std.range;
 
 /**
     Open an audio file
@@ -17,6 +18,60 @@ AudioStream open(string file, bool bit16 = true) {
     switch(file.extension) {
         case ".ogg": return new OggStream(file, bit16);
         default: throw new Exception("Unsupported file type (%s)".format(file.extension));
+    }
+}
+
+
+/**
+    Information about audio, usually music
+*/
+struct AudioInfo {
+
+    /**
+        The file of the audio
+    */
+    string file;
+
+    /**
+        The title of the audio
+    */
+    string title;
+
+    /**
+        The artist behind the music
+    */
+    string artist;
+
+    /**
+        The person performing the music
+    */
+    string performer;
+
+    /**
+        The person performing the music
+    */
+    string album;
+
+    /**
+        Date of release, usually year
+    */
+    string date;
+
+    /**
+        Get the audio info as a string
+    
+        According to Danish law even things CC0 or public domain has to include crediting
+        In the case the music doesn't (eg. the player drags music in to the game's music folder that is pirated)
+        We'll leave a little message for them :)
+    */
+    string toString() {
+        if (artist.empty || title.empty) return "%s\n[Info missing! yarr harr?]".format(file);
+
+        string base = "%s - %s".format(artist, title);
+        if (!album.empty) base ~= " from %s".format(album);
+        if (!date.empty) base ~= " (%s)".format(date);
+        if (!performer.empty) base ~= "\nPerfomed by %s".format(performer);
+        return base;
     }
 }
 
@@ -89,4 +144,11 @@ abstract:
         Gets the bitrate of the stream
     */
     size_t bitrate();
+
+    /**
+        Try to get the information about the audio
+
+        This information is usually only used for music
+    */
+    AudioInfo getInfo();
 }

@@ -18,6 +18,14 @@ int main(string[] args)
 		initEngine();
 		AppLog.info("AppMain", "Engine initialized...");
 
+		debug {
+
+			// In debug mode print playlist song info in console
+			GamePlaylist.onSongChange ~= (s, AudioInfo args) {
+				AppLog.info("Playlist", "Now playing %s...", args);
+			};
+		}
+
 		AppLog.info("AppMain", "Starting game loop...");
 		initGame();
 		gameLoop();
@@ -27,6 +35,7 @@ int main(string[] args)
 	}
 
 	// Destroy the app log and collect causing other destructors to also be run
+	closeEngine();
 	destroy(AppLog);
 	GC.collect();
 	return 0;

@@ -10,12 +10,14 @@ import vorbisfile;
 import std.string;
 import engine.core.log;
 import std.exception;
+import std.typecons;
 
 /**
     An Ogg Vorbis audio stream
 */
 class OggStream : AudioStream {
 private:
+    string fname;
     OggVorbis_File file;
     int section;
     int word;
@@ -48,6 +50,7 @@ public:
         Opens the OGG Vorbis stream file
     */
     this(string file, bool bit16) {
+        this.fname = file;
 
         // Open the file and verify it opened correctly
         int error = ov_fopen(file.toStringz, &this.file);
@@ -117,5 +120,60 @@ override:
     */
     size_t bitrate() {
         return bitrate_;
+    }
+
+    /**
+        Gets info about the OGG audio
+
+        Only music usually uses this
+    */
+    AudioInfo getInfo() {
+        
+        // Inline function to get the ogg comments as a D string array
+        string[] getOggInfo() {
+            string[] fields;
+
+            // Iterate over every comment
+            foreach(i; 0..file.vc.comments) {
+                immutable(int) commentLength = file.vc.comment_lengths[i];
+                string comment = cast(string)file.vc.user_comments[i][0..commentLength];
+                fields ~= comment;
+            }
+            return fields;
+        }
+
+        // Parse ogg info as a array of key and value
+        string[2] parseOggInfo(string info) {
+            auto idx = info.indexOf("=");
+            enforce(idx >= 0, "Invalid info");
+            return [info[0..idx], info[idx+1..$]];
+        }
+
+        // Inline function to parse the ogg info
+        string[string] parseOggInfos() {
+            string[string] infos;
+
+            string[] fields = getOggInfo();
+            foreach(i, field; fields) {
+                try {
+                    string[2] info = parseOggInfo(field);
+                    infos[info[0]] = info[1];
+                } catch (Exception ex) {
+                    AppLog.warn("Ogg Subsystem", "Failed the parse comment field %s: %s! Got data %s", i, ex.msg, field);
+                }
+            }
+
+            return infos;
+        }
+
+        AudioInfo info;
+        string[string] kv = parseOggInfos();
+        info.file = this.fname;
+        if ("ARTIST" in kv) info.artist = kv["ARTIST"];
+        if ("TITLE" in kv) info.title = kv["TITLE"];
+        if ("ALBUM" in kv) info.album = kv["ALBUM"];
+        if ("PERFOMER" in kv) info.performer = kv["PERFOMER"];
+        if ("DATE" in kv) info.date = kv["DATE"];
+        return info;
     }
 }

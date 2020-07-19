@@ -51,15 +51,22 @@ void initEngine() {
     // Initialize subsystems
     initTileMesh();
     AppLog.info("Engine", "Intialized internal state for renderer...");
+
+    initPlaylist();
+    AppLog.info("Engine", "Initialized smaller subsystems...");
 }
 
 /**
     Closes the engine and relases libraries, etc.
 */
 void closeEngine() {
-    glfwTerminate();
-    unloadGLFW();
-    unloadOpenGL();
+    import core.memory : GC;
+    destroy(GamePlaylist);
+    destroy(GameWindow);
+
+    // Collect the stuff before we terminate all this other stuff
+    // We let OpenGL, OpenAL and GLFW be terminated by the closing of the program
+    GC.collect();
 }
 
 private void initOAL() {
