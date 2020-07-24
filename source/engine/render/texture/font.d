@@ -132,6 +132,15 @@ private:
 public:
 
     /**
+        Destroys the font
+    */
+    ~this() {
+        destroy(fontTexture);
+        FT_Done_Face(fontFace);
+        glDeleteBuffers(1, &buffer);
+    }
+
+    /**
         Constructs a new font
     */
     this(string file, uint size) {
