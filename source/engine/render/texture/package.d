@@ -205,7 +205,7 @@ public:
     void setData(ubyte[] data) {
         this.bind();
         glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_, height_, 0, colorMode, GL_UNSIGNED_BYTE, data.ptr);
+        glTexImage2D(GL_TEXTURE_2D, 0, colorMode, width_, height_, 0, colorMode, GL_UNSIGNED_BYTE, data.ptr);
         glGenerateMipmap(GL_TEXTURE_2D);
     }
 
