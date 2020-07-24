@@ -14,6 +14,7 @@ public import engine.net;
 
 import bindbc.glfw;
 import bindbc.openal;
+import bindbc.freetype;
 
 /**
     Initialize the game engine
@@ -39,6 +40,11 @@ void initEngine() {
     initOGL();
     initRender();
     AppLog.info("Engine", "Renderer initialized...");
+
+    // Initialize Font system
+    initFT();
+    initFontSystem();
+    AppLog.info("Engine", "Font system initialized...");
 
     // Initialize input
     initInput(GameWindow.winPtr);
@@ -95,5 +101,14 @@ private void initOGL() {
         AppLog.fatal("Engine", "Could not load OpenGL, no library found!");
     } else if (support == GLSupport.noContext) {
         AppLog.fatal("Engine", "OpenGL context was not created before loading OpenGL.");
+    }
+}
+
+private void initFT() {
+    auto support = loadFreeType();
+    if (support == FTSupport.badLibrary) {
+        AppLog.fatal("Engine", "Could not load FreeType, bad library!");
+    } else if (support == FTSupport.noLibrary) {
+        AppLog.fatal("Engine", "Could not load FreeType, no library found!");
     }
 }

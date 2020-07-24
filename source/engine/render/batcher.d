@@ -84,7 +84,7 @@ public:
     /**
         Draws cached atlas index
     */
-    void draw(AtlasIndex index, vec4 position, vec2 origin = vec2(0, 0), float rotation = 0f, vec4 color = vec4(1, 1, 1, 1)) {
+    void draw(AtlasIndex index, vec4 position, vec2 origin = vec2(0, 0), float rotation = 0f, vec4 color = vec4(1)) {
         draw(index.texture, position, index.area, origin, rotation, color);
     }
 
@@ -96,7 +96,7 @@ public:
         Flush will automatically be called if your draws exceed the max count
         Flush will automatically be called if you queue an other texture
     */
-    void draw(Texture texture, vec4 position, vec4 cutout = vec4.init, vec2 origin = vec2(0, 0), float rotation = 0f, vec4 color = vec4(1, 1, 1, 1)) {
+    void draw(Texture texture, vec4 position, vec4 cutout = vec4.init, vec2 origin = vec2(0, 0), float rotation = 0f, vec4 color = vec4(1)) {
 
         // Flush if neccesary
         if (dataOffset == DataSize*EntryCount) flush();
@@ -147,6 +147,9 @@ public:
 
         // Don't draw empty textures
         if (currentTexture is null) return;
+
+        // Bind VAO
+        glBindVertexArray(vao);
 
         // Bind just in case some shennanigans happen
         glBindBuffer(GL_ARRAY_BUFFER, buffer);

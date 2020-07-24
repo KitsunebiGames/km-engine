@@ -14,6 +14,7 @@ Kitsune Mahjong requires the following dependencies to be present to work:
  * libogg
  * libvorbis
  * libvorbisfile
+ * FreeType
 
 ## Debugging
 To debug the game run

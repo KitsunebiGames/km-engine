@@ -7,6 +7,7 @@
 module engine.render.texture;
 public import engine.render.texture.packer;
 public import engine.render.texture.atlas;
+public import engine.render.texture.font;
 import bindbc.opengl;
 import std.exception;
 import imagefmt;
@@ -83,7 +84,7 @@ public:
 
         // Load image from disk, as RGBA 8-bit
         IFImage image = read_image(file, 4, 8);
-        enforce( image.e == 0, IF_ERROR[image.e]);
+        enforce( image.e == 0, "%s: %s".format(IF_ERROR[image.e], file));
         scope(exit) image.free();
 
         // Copy data from IFImage to this ShallowTexture
@@ -105,6 +106,9 @@ private:
     int width_;
     int height_;
 
+    GLuint colorMode;
+    int alignment;
+
 public:
 
     /**
@@ -119,7 +123,7 @@ public:
 
         // Load image from disk, as RGBA 8-bit
         IFImage image = read_image(file, 4, 8);
-        enforce( image.e == 0, IF_ERROR[image.e]);
+        enforce( image.e == 0, "%s: %s".format(IF_ERROR[image.e], file));
         scope(exit) image.free();
 
         // Load in image data to OpenGL
@@ -136,19 +140,21 @@ public:
     /**
         Creates a new empty texture
     */
-    this(int width, int height) {
+    this(int width, int height, GLuint mode = GL_RGBA, int alignment = 4) {
 
         // Create an empty texture array with no data
-        ubyte[] empty = new ubyte[width_*height_*4];
+        ubyte[] empty = new ubyte[width_*height_*alignment];
 
         // Pass it on to the other texturing
-        this(empty, width, height);
+        this(empty, width, height, mode, alignment);
     }
 
     /**
         Creates a new texture from specified data
     */
-    this(ubyte[] data, int width, int height) {
+    this(ubyte[] data, int width, int height, GLuint mode = GL_RGBA, int alignment = 4) {
+        this.colorMode = mode;
+        this.alignment = alignment;
         this.width_ = width;
         this.height_ = height;
         
@@ -198,7 +204,8 @@ public:
     */
     void setData(ubyte[] data) {
         this.bind();
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_, height_, 0, GL_RGBA, GL_UNSIGNED_BYTE, data.ptr);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_, height_, 0, colorMode, GL_UNSIGNED_BYTE, data.ptr);
         glGenerateMipmap(GL_TEXTURE_2D);
     }
 
@@ -213,7 +220,8 @@ public:
         enforce( y >= 0 && y+height <= this.height_, "y offset is out of bounds (yoffset=%s, ybound=%s)".format(y+height, this.height_));
 
         // Update the texture
-        glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data.ptr);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
+        glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, this.colorMode, GL_UNSIGNED_BYTE, data.ptr);
         glGenerateMipmap(GL_TEXTURE_2D);
     }
 
