@@ -100,15 +100,17 @@ public:
             GameBatch.draw(
                 cached,
                 vec4(position.x, (position.y+4)-yOffset, size.x, size.y), 
+                vec4.init,
                 vec2(size.x/2, size.y),
-                rotation,
+                rotation
             );
         } else {
             GameBatch.draw(
                 cached,
                 vec4(position.x, position.y, size.x, size.y), 
+                vec4.init,
                 vec2(size.x/2, size.y),
-                rotation,
+                rotation
             );
         }
 

@@ -34,6 +34,15 @@ private {
 static SpriteBatch GameBatch;
 
 /**
+    Sprite flipping
+*/
+enum SpriteFlip {
+    None = 0,
+    Horizontal = 1,
+    Vertical = 2
+}
+
+/**
     Batches Texture objects for 2D drawing
 */
 class SpriteBatch {
@@ -76,16 +85,37 @@ public:
     /**
         Draws texture from atlas
     */
-    void draw(string item, vec4 position, vec2 origin = vec2(0, 0), float rotation = 0f, vec4 color = vec4(1, 1, 1, 1)) {
+    void draw(string item, vec4 position, vec4 cutout = vec4.init, vec2 origin = vec2(0, 0), float rotation = 0f, SpriteFlip flip = SpriteFlip.None, vec4 color = vec4(1, 1, 1, 1)) {
         auto index = GameAtlas[item];
-        draw(index, position, origin, rotation, color);
+        draw(index, position, cutout, origin, rotation, flip, color);
     }
 
     /**
         Draws cached atlas index
     */
-    void draw(AtlasIndex index, vec4 position, vec2 origin = vec2(0, 0), float rotation = 0f, vec4 color = vec4(1)) {
-        draw(index.texture, position, index.area, origin, rotation, color);
+    void draw(AtlasIndex index, vec4 position, vec4 cutout = vec4.init, vec2 origin = vec2(0, 0), float rotation = 0f, SpriteFlip flip = SpriteFlip.None, vec4 color = vec4(1)) {
+        
+        vec4 fCutout = index.area;
+        if (cutout.isFinite) {
+
+            // Clamp the cutout to fit within the texture's area
+            vec4 cutoutClamped = vec4(
+                clamp(cutout.x, 0, index.area.z),
+                clamp(cutout.y, 0, index.area.w),
+                clamp(cutout.z, 0, index.area.z),
+                clamp(cutout.w, 0, index.area.w),
+            );
+            
+            // Cut in to the area
+            fCutout = vec4(
+                index.area.x+cutoutClamped.x,
+                index.area.y+cutoutClamped.y,
+                cutoutClamped.z,
+                cutoutClamped.w,
+            );
+        }
+        
+        draw(index.texture, position, fCutout, origin, rotation, flip, color);
     }
 
     /**
@@ -96,7 +126,7 @@ public:
         Flush will automatically be called if your draws exceed the max count
         Flush will automatically be called if you queue an other texture
     */
-    void draw(Texture texture, vec4 position, vec4 cutout = vec4.init, vec2 origin = vec2(0, 0), float rotation = 0f, vec4 color = vec4(1)) {
+    void draw(Texture texture, vec4 position, vec4 cutout = vec4.init, vec2 origin = vec2(0, 0), float rotation = 0f, SpriteFlip flip = SpriteFlip.None, vec4 color = vec4(1)) {
 
         // Flush if neccesary
         if (dataOffset == DataSize*EntryCount) flush();
@@ -118,10 +148,10 @@ public:
         }
 
         vec4 uvArea = vec4(
-            (cutout.x)+0.8,
-            (cutout.y)+0.8,
-            (cutout.x+cutout.z)-1.5,
-            (cutout.y+cutout.w)-1.5,
+            (flip & SpriteFlip.Horizontal) > 0 ? (cutout.x+cutout.z)-1.5 : (cutout.x)+0.8,
+            (flip & SpriteFlip.Vertical)   > 0 ? (cutout.y+cutout.w)-1.5 : (cutout.y)+0.8,
+            (flip & SpriteFlip.Horizontal) > 0 ? (cutout.x)+0.8 : (cutout.x+cutout.z)-1.5,
+            (flip & SpriteFlip.Vertical)   > 0 ? (cutout.y)+0.8 : (cutout.y+cutout.w)-1.5,
         );
 
         // Triangle 1
