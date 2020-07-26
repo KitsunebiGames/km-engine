@@ -72,12 +72,18 @@ private:
         vec2 bearing;
     }
 
+    struct GlyphIndex {
+        dchar c;
+        int size;
+    }
+
     vec2 metrics;
 
     FT_Face fontFace;
     TexturePacker fontPacker;
     Texture fontTexture;
-    Glyph[dchar] glyphs;
+    Glyph[GlyphIndex] glyphs;
+    int size;
 
     // Generates glyph for the specified character
     bool genGlyphFor(dchar c) {
@@ -102,7 +108,7 @@ private:
         fontTexture.setDataRegion(pixData, area.x, area.y, width, height);
 
         // Add glyph to listing
-        glyphs[c] = Glyph(
+        glyphs[GlyphIndex(c, size)] = Glyph(
             // Area (in texture)
             area, 
 
@@ -143,14 +149,14 @@ public:
     /**
         Constructs a new font
     */
-    this(string file, uint size) {
+    this(string file, int size) {
         int err = FT_New_Face(lib, file.toStringz, 0, &fontFace);
 
         enforce(err != FT_Err_Unknown_File_Format, "Unknown file format for %s".format(file));
         enforce(err == FT_Err_Ok, "Error %s while loading font file".format(err));
 
-        // Set the size of the font
-        FT_Set_Pixel_Sizes(fontFace, 0, size);
+        // Change size of text
+        changeSize(size);
 
         // Select unicode so we can render i18n text
         FT_Select_Charmap(fontFace, FT_ENCODING_UNICODE);
@@ -163,8 +169,6 @@ public:
         glGenBuffers(1, &buffer);
         glBindBuffer(GL_ARRAY_BUFFER, buffer);
         glBufferData(GL_ARRAY_BUFFER, float.sizeof*data.length, data.ptr, GL_DYNAMIC_DRAW);
-
-        metrics = vec2(size, fontFace.size.metrics.height >> 6);
     }
 
 
@@ -172,6 +176,19 @@ public:
     //    Glyph managment
     //
 
+    /**
+        Changes size of font
+    */
+    final void changeSize(int size) {
+
+        // Don't try to change size when it's the same
+        if (size == this.size) return;
+
+        // Set the size of the font
+        FT_Set_Pixel_Sizes(fontFace, 0, size);
+        metrics = vec2(size, fontFace.size.metrics.height >> 6);
+        this.size = size;
+    }
 
     /**
         Gets the advance of a glyph
@@ -181,11 +198,13 @@ public:
         // Newline is special
         if (glyph == '\n') return vec2(0);
 
+        auto idx = GlyphIndex(glyph, size);
+
         // Make sure glyph is present
-        if (glyph !in glyphs) enforce(genGlyphFor(glyph), "Could not find glyph for character %s".format(glyph));
+        if (idx !in glyphs) enforce(genGlyphFor(glyph), "Could not find glyph for character %s".format(glyph));
         
         // Return the advance of the glyphs
-        return glyphs[glyph].advance;
+        return glyphs[idx].advance;
     }
 
     /**
@@ -201,18 +220,21 @@ public:
             if (c == '\n') {
                 lines++;
                 curLineLen = 0;
+                continue;
             }
 
+            auto idx = GlyphIndex(c, this.size);
+
             // Try to generate glyph if not present
-            if (c !in glyphs) {
+            if (idx !in glyphs) {
                 genGlyphFor(c);
 
                 // At this point if the glyph does not exist, skip it
-                if (c !in glyphs) continue;
+                if (idx !in glyphs) continue;
             }
 
             // Bitshift the X advance to make it be in pixels.
-            curLineLen += glyphs[c].advance.x;
+            curLineLen += glyphs[idx].advance.x;
 
             // Update the bounding box if the length extends
             if (curLineLen > size.x) size.x = curLineLen;
@@ -242,17 +264,19 @@ public:
                 next.y += metrics.y;
                 continue;
             }
+
+            auto idx = GlyphIndex(c, size);
                   
             // Load character if neccesary
-            if (c !in glyphs) {
+            if (idx !in glyphs) {
                 genGlyphFor(c);
 
                 // At this point if the glyph does not exist, skip it
-                if (c !in glyphs) continue;
+                if (idx !in glyphs) continue;
             }
 
             draw(c, next, vec2(0), 0, color);
-            next.x += glyphs[c].advance.x;
+            next.x += glyphs[idx].advance.x;
         }
     }
 
@@ -261,18 +285,20 @@ public:
     */
     void draw(dchar c, vec2 position, vec2 origin=vec2(0), float rotation=0, vec4 color=vec4(1)) {
         
+        auto idx = GlyphIndex(c, size);
+
         // Load character if neccesary
-        if (c !in glyphs) {
+        if (idx !in glyphs) {
             genGlyphFor(c);
 
             // At this point if the glyph does not exist, skip it
-            if (c !in glyphs) return;
+            if (idx !in glyphs) return;
         }
 
         // Flush if neccesary
         if (dataOffset == DataSize*EntryCount) flush();
-        vec4 area = glyphs[c].area;
-        vec2 bearing = glyphs[c].bearing;
+        vec4 area = glyphs[idx].area;
+        vec2 bearing = glyphs[idx].bearing;
 
         vec2 pos = vec2(
             position.x + bearing.x,
