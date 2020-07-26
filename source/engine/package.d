@@ -11,6 +11,7 @@ public import engine.render;
 public import engine.math;
 public import engine.audio;
 public import engine.net;
+public import engine.ui;
 
 import bindbc.glfw;
 import bindbc.openal;
@@ -59,6 +60,7 @@ void initEngine() {
     AppLog.info("Engine", "Intialized internal state for renderer...");
 
     initPlaylist();
+    initUI("assets/fonts/KosugiMaru.ttf");
     AppLog.info("Engine", "Initialized smaller subsystems...");
 }
 
