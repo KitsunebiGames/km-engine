@@ -81,24 +81,24 @@ private:
             -relWidth, relHeight, relLength,
 
             // Top Face Tri 1
-            -relWidth, relHeight, relLength,
             relWidth, relHeight, -relLength,
-            -relWidth, relHeight, -relLength,
+            -relWidth,  relHeight, -relLength,
+            relWidth, relHeight, relLength,
 
             // Top Face Tri 2
-            -relWidth, relHeight, relLength,
-            relWidth, relHeight, relLength,
-            relWidth, relHeight, -relLength,
+            -relWidth, relHeight, -relLength,
+            -relWidth,  relHeight, relLength,
+            relWidth,  relHeight, relLength,
 
             // Back Face Tri 1
-            -relWidth, relHeight, -relLength,
-            relWidth, -relHeight, -relLength,
-            -relWidth, -relHeight, -relLength,
+            relWidth,  -relHeight,  -relLength,
+            -relWidth, -relHeight,  -relLength,
+            relWidth,   relHeight,  -relLength,
 
             // Back Face Tri 2
-            -relWidth, relHeight, -relLength,
-            relWidth, relHeight, -relLength,
-            relWidth, -relHeight, -relLength,
+            -relWidth, -relHeight,  -relLength,
+            -relWidth,  relHeight,  -relLength,
+            relWidth,   relHeight,  -relLength,
 
             // Bottom Face Tri 1
             -relWidth, -relHeight, -relLength,
@@ -111,22 +111,22 @@ private:
             -relWidth, -relHeight, relLength,
 
             // Left Face Tri 1
+            -relWidth, relHeight, -relLength,
             -relWidth, -relHeight, -relLength,
             -relWidth, relHeight, relLength,
-            -relWidth, relHeight, -relLength,
 
             // Left Face Tri 2
+            -relWidth, -relHeight, -relLength,
             -relWidth, -relHeight, relLength,
             -relWidth, relHeight, relLength,
-            -relWidth, -relHeight, -relLength,
 
             // Right Face Tri 1
-            relWidth, relHeight, -relLength,
-            relWidth, relHeight, relLength,
             relWidth, -relHeight, -relLength,
+            relWidth, relHeight, -relLength,
+            relWidth, -relHeight, relLength,
 
             // Right Face Tri 2
-            relWidth, -relHeight, -relLength,
+            relWidth, relHeight, -relLength,
             relWidth, relHeight, relLength,
             relWidth, -relHeight, relLength,
         ];
