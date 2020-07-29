@@ -1,7 +1,8 @@
-# Kitsune Mahjong
-Kitsune Mahjong is an open source Mahjong Solitaire game, inspired by [Kyodai Mahjongg](https://cynagames.com/).
+# Kitsune Mahjong Engine
+Kitsune Mahjong is a game about fox girls playing Mahjong, the game was initially going to be fully open source.
+For now the actual gameplay will be closed source.
 
-Over time various mini-games using the Mahjong tiles will be added.
+In this source tree you'll find the engine (and if you look back in the history you'll find a mahjong solitaire game implemented on top.)
 
 ## Contributing
 I will not be accepting any pull-requests for this repository.
