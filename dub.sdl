@@ -1,5 +1,5 @@
-name "kitsune-mahjong"
-description "A fox girl Mahjong Solitaire game"
+name "km-engine"
+description "Game engine for Kitsune Mahjong"
 authors "Luna Nielsen" "Kitsunebi Games"
 copyright "Copyright © 2020, Kitsunebi Games"
 license "BSD 2-clause"

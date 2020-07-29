@@ -12,6 +12,7 @@ public import engine.math;
 public import engine.audio;
 public import engine.net;
 public import engine.ui;
+public import engine.game;
 
 import bindbc.glfw;
 import bindbc.openal;
