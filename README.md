@@ -10,6 +10,22 @@ You can find Development builds on Luna's Discord server.
 * [English](https://discord.gg/AMpbKAB)
 * [日本語](https://discord.gg/Bd3makR)
 
+## Planned Features
+This is an non-exhaustive list of planned features we're working on.
+Planned features may be subject to change.
+
+ * Riichi Mahjong
+   * CPU Opponents
+   * Network Play
+   * WiFi-Play[1]
+   * 3 and 2 player Riichi variants
+ * Mahjong Solitaire
+ * Various Minigames using Mahjong-like tiles
+ * Single Player Story Mode
+   * Yuri romcom visual novel with riichi mahjong matches spliced in
+
+[1] When/if Nintendo Switch port gets completed.
+
 ## Contributing
 I will not be accepting any pull-requests for this repository.
 
