@@ -4,6 +4,12 @@ For now the actual gameplay will be closed source.
 
 In this source tree you'll find the engine (and if you look back in the history you'll find a mahjong solitaire game implemented on top.)
 
+## Development/Test Builds
+
+You can find Development builds on Luna's Discord server.
+* [English](https://discord.gg/AMpbKAB)
+* [日本語](https://discord.gg/Bd3makR)
+
 ## Contributing
 I will not be accepting any pull-requests for this repository.
 
