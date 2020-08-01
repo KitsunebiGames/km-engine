@@ -6,7 +6,10 @@ In this source tree you'll find the engine (and if you look back in the history 
 
 ## Development/Test Builds
 
-You can find Development builds on Luna's Discord server.
+To get access to development builds of Kitsune Mahjong please [support Luna on Patreon](https://www.patreon.com/clipsey).  
+You'll get access to a special set of channels for the game; including one where Luna occasionally uploads development builds.
+
+You can discuss the game and see git push logs for the engine and game on Luna's Discord Server
 * [English](https://discord.gg/AMpbKAB)
 * [日本語](https://discord.gg/Bd3makR)
 
@@ -31,13 +34,15 @@ I will not be accepting any pull-requests for this repository.
 
 ## Dependencies
 Kitsune Mahjong requires the following dependencies to be present to work:
- * OpenAL Driver (or openal-soft)
+ * OpenAL Driver ([OpenAL-Soft included on Windows](https://github.com/kcat/openal-soft))
  * OpenGL Driver
  * GLFW3
  * libogg
  * libvorbis
  * libvorbisfile
  * FreeType
+
+On Windows these libraries are copied from the included lib/ folder.
 
 ## Debugging
 To debug the game run
