@@ -357,7 +357,10 @@ public:
     void stop() {
         running = false;
         alSourceStop(sourceId);
-        if (playerThread !is null) playerThread.join();
+        if (playerThread !is null) {
+            playerThread.join();
+            playerThread = null;
+        }
     }
 
     /**
