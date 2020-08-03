@@ -5,9 +5,9 @@ docs/
 /km-engine
 libkm-engine.so
 libkm-engine.dylib
-libkm-engine.dll
 libkm-engine.a
-libkm-engine.lib
+km-engine.dll
+km-engine.lib
 libkm-engine-test-*
 *.zip
 *.exe
