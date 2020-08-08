@@ -33,7 +33,7 @@ Planned features may be subject to change.
 I will not be accepting any pull-requests for this repository.
 
 ## Dependencies
-Kitsune Mahjong requires the following dependencies to be present to work:
+The Kitsune Mahjong engine requires the following dependencies to be present to work:
  * OpenAL Driver ([OpenAL-Soft included on Windows](https://github.com/kcat/openal-soft))
  * OpenGL Driver
  * GLFW3
@@ -43,3 +43,36 @@ Kitsune Mahjong requires the following dependencies to be present to work:
  * FreeType
 
 On Windows these libraries are copied from the included libs/ folder.
+
+## How to use
+Add `km-engine` as a dependency to your project (`dub add km-engine`)
+
+Bootstrap the engine with the following code:
+```d
+void _init() {
+    // Initialize your game's resources
+    GameWindow.title = "My Game";
+}
+
+void _update() {
+    // Update and draw your game
+}
+
+void _cleanup() {
+    // Clean up resources when game is requested to close.
+}
+
+int main() {
+    // Sets the essential game functions
+    gameInit = &_init;
+    gameUpdate = &_update;
+    gameCleanup = &_cleanup;
+
+    // Handle game initialization, looping and closing the engine after use.
+    // It's recommended using a try/catch block to catch any errors that might pop up.
+    initEngine();
+    startGame();
+    closeEngine();
+    return 0;
+}
+```

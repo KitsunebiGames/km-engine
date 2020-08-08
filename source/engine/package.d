@@ -22,6 +22,8 @@ import bindbc.freetype;
     Initialize the game engine
 */
 void initEngine() {
+    // Initialize logger if needed
+    if (AppLog is null) AppLog = new Logger();
 
     // Initialize GLFW
     initGLFW();
@@ -72,6 +74,7 @@ void closeEngine() {
     import core.memory : GC;
     destroy(GamePlaylist);
     destroy(GameWindow);
+	destroy(AppLog);
 
     // Collect the stuff before we terminate all this other stuff
     // We let OpenGL, OpenAL and GLFW be terminated by the closing of the program
