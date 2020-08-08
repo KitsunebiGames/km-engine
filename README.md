@@ -26,8 +26,13 @@ Planned features may be subject to change.
  * Various Minigames using Mahjong-like tiles
  * Single Player Story Mode
    * Yuri romcom visual novel with riichi mahjong matches spliced in
+ * Multiple supported languages
+   * English
+   * Japanese
+   * Danish
 
-[1] When/if Nintendo Switch port gets completed.
+[1] When/if Nintendo Switch port gets completed.  
+Development can be followed on the [キツネビ](https://twitter.com/Kitsunebi_Games) Twitter account as well as [Luna's personal twitter](https://twitter.com/Clipsey5)
 
 ## Contributing
 I will not be accepting any pull-requests for this repository.
@@ -49,6 +54,7 @@ Add `km-engine` as a dependency to your project (`dub add km-engine`)
 
 Bootstrap the engine with the following code:
 ```d
+import engine;
 void _init() {
     // Initialize your game's resources
     GameWindow.title = "My Game";
