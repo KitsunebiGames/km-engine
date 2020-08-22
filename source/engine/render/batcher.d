@@ -135,6 +135,7 @@ public:
         // Update current texture
         currentTexture = texture;
 
+        // Calculate rotation, position and scaling.
         mat4 transform =
             mat4.translation(-origin.x, -origin.y, 0) *
             mat4.translation(position.x, position.y, 0) *
@@ -143,10 +144,13 @@ public:
             mat4.translation(-origin.x, -origin.y, 0) *
             mat4.scaling(position.z, position.w, 0);
 
+        // If cutout has not been set (all values are NaN or infinity) we set it to use the entire texture
         if (!cutout.isFinite) {
             cutout = vec4(0, 0, texture.width, texture.height);
         }
 
+        // Get the area of the texture with a tiny bit cut off to avoid textures bleeding in to each other
+        // TODO: add a 1x1 px transparent border around textures instead?
         vec4 uvArea = vec4(
             (flip & SpriteFlip.Horizontal) > 0 ? (cutout.x+cutout.z)-1.5 : (cutout.x)+0.8,
             (flip & SpriteFlip.Vertical)   > 0 ? (cutout.y+cutout.w)-1.5 : (cutout.y)+0.8,
@@ -190,11 +194,11 @@ public:
         // Bind the texture
         currentTexture.bind();
 
-        // Use our sprite batcher shader
+        // Use our sprite batcher shader and bind our camera matrix
         spriteBatchShader.use();
         spriteBatchShader.setUniform(vp, batchCamera.matrix);
 
-        // Vertex Buffer
+        // Vertex buffer
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(
             0,
@@ -205,7 +209,7 @@ public:
             null,
         );
 
-        // UV Buffer
+        // UV buffer
         glEnableVertexAttribArray(1);
         glVertexAttribPointer(
             1,
@@ -216,7 +220,7 @@ public:
             cast(GLvoid*)(UVSize*GLfloat.sizeof),
         );
 
-        // UV Buffer
+        // Color buffer
         glEnableVertexAttribArray(2);
         glVertexAttribPointer(
             2,
@@ -238,7 +242,7 @@ public:
         dataOffset = 0;
         tris = 0;
 
-        // Re-enable depth test Clear depth buffer
+        // Re-enable depth testing for 3D rendering
         glEnable(GL_DEPTH_TEST);
     }
 }
