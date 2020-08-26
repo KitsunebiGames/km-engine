@@ -216,12 +216,7 @@ public:
             (texArea.x+texArea.z)/texSize.x, 
             (texArea.y+texArea.w)/texSize.y
         );
-
-        // Adjust UV points to avoid oversampling
-        uvPoints.x += 0.25/texSize.x;
-        uvPoints.y += 0.25/texSize.y;
-        uvPoints.z -= 0.25/texSize.x;
-        uvPoints.w -= 0.25/texSize.y;
+        
         entries[name] = AtlasArea(texArea, uvPoints);
         return entries[name];
     }
