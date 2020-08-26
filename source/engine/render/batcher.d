@@ -151,11 +151,14 @@ public:
 
         // Get the area of the texture with a tiny bit cut off to avoid textures bleeding in to each other
         // TODO: add a 1x1 px transparent border around textures instead?
+        enum cutoffOffset = 0.8;
+        enum cutoffAmount = cutoffOffset*2;
+
         vec4 uvArea = vec4(
-            (flip & SpriteFlip.Horizontal) > 0 ? (cutout.x+cutout.z)-1.5 : (cutout.x)+0.8,
-            (flip & SpriteFlip.Vertical)   > 0 ? (cutout.y+cutout.w)-1.5 : (cutout.y)+0.8,
-            (flip & SpriteFlip.Horizontal) > 0 ? (cutout.x)+0.8 : (cutout.x+cutout.z)-1.5,
-            (flip & SpriteFlip.Vertical)   > 0 ? (cutout.y)+0.8 : (cutout.y+cutout.w)-1.5,
+            (flip & SpriteFlip.Horizontal) > 0 ? (cutout.x+cutout.z)-cutoffAmount : (cutout.x)+cutoffOffset,
+            (flip & SpriteFlip.Vertical)   > 0 ? (cutout.y+cutout.w)-cutoffAmount : (cutout.y)+cutoffOffset,
+            (flip & SpriteFlip.Horizontal) > 0 ? (cutout.x)+cutoffOffset : (cutout.x+cutout.z)-cutoffAmount,
+            (flip & SpriteFlip.Vertical)   > 0 ? (cutout.y)+cutoffOffset : (cutout.y+cutout.w)-cutoffAmount,
         );
 
         // Triangle 1
