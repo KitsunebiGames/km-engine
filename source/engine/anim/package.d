@@ -6,3 +6,4 @@
     
     Authors: Luna Nielsen
 */
+module engine.anim;
