@@ -29,7 +29,6 @@ Planned features may be subject to change.
  * Multiple supported languages
    * English
    * Japanese
-   * Danish
 
 [1] When/if Nintendo Switch port gets completed.  
 Development can be followed on the [キツネビ](https://twitter.com/Kitsunebi_Games) Twitter account as well as [Luna's personal twitter](https://twitter.com/Clipsey5)
