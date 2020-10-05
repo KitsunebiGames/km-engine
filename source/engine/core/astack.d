@@ -9,10 +9,14 @@ import std.exception;
 
 /**
     A stack of actions performed in the game
+
+    Actions can be undone and redone.
+    Pushing a new action to the stack will overwrite actions past the current top cursor.
 */
 class ActionStack(ActionT) {
 private:
     ActionT[] stack;
+    size_t top;
 
 public:
 
@@ -20,35 +24,52 @@ public:
         Push an action to the stack
     */
     ActionT push(ActionT item) {
+
+        // First remove any elements in the undo/redo chain after our top
+        stack.length = top+1;
+
+        // Move the top up one element
+        top++;
+
+        // Add new item
         stack ~= item;
         return stack[$-1];
     }
 
     /**
-        Peek an action from the stack
+        Get the current top of the stack
     */
-    ActionT peek(size_t offset = 0) {
-        return stack[$-(offset+1)];
+    ActionT get() {
+        return stack[top];
     }
 
     /**
-        Pop action(s) from the stack
-
-        Returns the item that was popped
+        Undo an action
     */
-    ActionT pop() {
-        enforce(canPop, "Can not pop empty stack, use canPop to check whether something is pop-able");
-
-        // Get the top of the stack, then decrease its size before returning the previous top element
-        ActionT top = stack[$-1];
-        stack.length--;
-        return top;
+    ActionT undo() {
+        if (top > 0) top--;
+        return stack[top];
     }
 
     /**
-        Gets whether the specified amount of actions can be popped
+        Redo an action
     */
-    bool canPop() {
-        return stack.length > 0;
+    ActionT redo() {
+        if (top < stack.length) top++;
+        return stack[top];
+    }
+
+    /**
+        Returns true if there's any actions left to undo
+    */
+    bool canUndo() {
+        return top > 0;
+    }
+
+    /**
+        Returns true if there's any actions left to redo
+    */
+    bool canRedo() {
+        return top < stack.length;
     }
 }
