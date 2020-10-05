@@ -22,6 +22,8 @@ public:
 
     /**
         Push an action to the stack
+
+        Returns the resulting top of the stack
     */
     ActionT push(ActionT item) {
 
@@ -45,6 +47,8 @@ public:
 
     /**
         Undo an action
+
+        Returns the resulting top of the stack
     */
     ActionT undo() {
         if (top > 0) top--;
@@ -53,6 +57,8 @@ public:
 
     /**
         Redo an action
+
+        Returns the resulting top of the stack
     */
     ActionT redo() {
         if (top < stack.length) top++;
