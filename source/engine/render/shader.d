@@ -104,6 +104,10 @@ public:
         return glGetUniformLocation(shaderProgram, name.ptr);
     }
 
+    void setUniform(GLint uniform, int value) {
+        glUniform1i(uniform, value);
+    }
+
     void setUniform(GLint uniform, float value) {
         glUniform1f(uniform, value);
     }
@@ -114,6 +118,10 @@ public:
 
     void setUniform(GLint uniform, vec3 value) {
         glUniform3f(uniform, value.x, value.y, value.z);
+    }
+
+    void setUniform(GLint uniform, vec4 value) {
+        glUniform4f(uniform, value.x, value.y, value.z, value.w);
     }
 
     void setUniform(GLint uniform, mat4 value) {
