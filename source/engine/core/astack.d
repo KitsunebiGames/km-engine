@@ -42,6 +42,7 @@ public:
         Get the current top of the stack
     */
     ActionT get() {
+        enforce(stack.length > 0, "ActionStack is empty.");
         return stack[top];
     }
 
@@ -51,6 +52,7 @@ public:
         Returns the resulting top of the stack
     */
     ActionT undo() {
+        enforce(stack.length > 0, "ActionStack is empty.");
         if (top > 0) top--;
         return stack[top];
     }
@@ -61,8 +63,24 @@ public:
         Returns the resulting top of the stack
     */
     ActionT redo() {
+        enforce(stack.length > 0, "ActionStack is empty.");
         if (top < stack.length) top++;
         return stack[top];
+    }
+
+    /**
+        Clear the action stack
+    */
+    void clear() {
+        top = 0;
+        stack.length = 0;
+    }
+
+    /**
+        Gets whether the action stack is empty.
+    */
+    bool empty() {
+        return stack.length == 0;
     }
 
     /**
