@@ -148,8 +148,10 @@ public:
 
     /**
         Constructs a new font
+
+        canvasSize specifies how big the texture for the font will be.
     */
-    this(string file, int size) {
+    this(string file, int size, int canvasSize = 4096) {
         int err = FT_New_Face(lib, file.toStringz, 0, &fontFace);
 
         enforce(err != FT_Err_Unknown_File_Format, "Unknown file format for %s".format(file));
@@ -162,8 +164,8 @@ public:
         FT_Select_Charmap(fontFace, FT_ENCODING_UNICODE);
 
         // Create the texture
-        fontTexture = new Texture(8192, 8192, GL_RED, 1);
-        fontPacker = new TexturePacker(vec2i(8192, 8192));
+        fontTexture = new Texture(canvasSize, canvasSize, GL_RED, 1);
+        fontPacker = new TexturePacker(vec2i(canvasSize, canvasSize));
 
         glBindVertexArray(vao);
         glGenBuffers(1, &buffer);
