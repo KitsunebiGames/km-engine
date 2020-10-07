@@ -10,6 +10,11 @@ out vec4 outColor;
 
 uniform sampler2D tex;
 
+uniform bool available;
+
 void main() {
     outColor = texture(tex, texUVs);
+    if (!available) {
+        outColor = outColor * vec4(0.8, 0.8, 0.8, 1);
+    }
 }

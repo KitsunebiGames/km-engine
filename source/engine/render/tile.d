@@ -13,6 +13,7 @@ import std.format : format;
 private {
     static Shader TileShader;
     static GLint TileShaderMVP;
+    static GLint TileAvailability;
 }
 
 /**
@@ -25,6 +26,7 @@ void initTileMesh() {
         TileShader = new Shader(import("shaders/tile.vert"), import("shaders/tile.frag"));
         TileShader.use();
         TileShaderMVP = TileShader.getUniformLocation("mvp");
+        TileAvailability = TileShader.getUniformLocation("available");
     }
 }
 
@@ -256,6 +258,11 @@ private:
 public:
 
     /**
+        Availability
+    */
+    bool available = true;
+
+    /**
         Destructor
     */
     ~this() {
@@ -307,6 +314,7 @@ public:
         TileShader.use();
         atlas.bind();
         TileShader.setUniform(TileShaderMVP, camera.matrix*transform);
+        TileShader.setUniform(TileAvailability, available);
         glDrawArrays(GL_TRIANGLES, 0, cast(int)verts.length);
     }
 

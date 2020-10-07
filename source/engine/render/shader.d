@@ -104,6 +104,10 @@ public:
         return glGetUniformLocation(shaderProgram, name.ptr);
     }
 
+    void setUniform(GLint uniform, bool value) {
+        glUniform1i(uniform, cast(int)value);
+    }
+
     void setUniform(GLint uniform, int value) {
         glUniform1i(uniform, value);
     }
