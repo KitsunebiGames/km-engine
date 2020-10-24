@@ -116,6 +116,13 @@ public:
         texTable[name] = AtlasIndex(atlasses[atlas], area.uv, area.area);
 
     }
+
+    /**
+        Remove named texture
+    */
+    void remove(string name) {
+        texTable[name].parentAtlas.remove(name);
+    }
 }
 
 /**
