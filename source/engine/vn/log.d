@@ -12,7 +12,7 @@ public:
     /**
         The log
     */
-    string[] log;
+    dstring[] log;
 
     /**
         Adds item to the log
