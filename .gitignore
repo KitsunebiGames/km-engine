@@ -2,6 +2,7 @@
 docs.json
 __dummy.html
 docs/
+out/
 /km-engine
 libkm-engine.so
 libkm-engine.dylib

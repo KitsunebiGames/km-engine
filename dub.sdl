@@ -14,6 +14,7 @@ dependency "bindbc-glfw" version="~>0.10.0"
 libs "vorbisfile" "ogg" "vorbis"
 versions "GL_33"
 stringImportPaths "res/"
+targetPath "out/"
 copyFiles "libs/COPYING-FreeType" "libs/COPYING-XIPH" "libs/COPYING-OpenALSoft" "libs/COPYING-glfw3"
 
 // For Windows
