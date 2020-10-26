@@ -29,6 +29,7 @@ class DialogueRenderer {
 private:
     dstring current;
     size_t rendOffset = 0;
+    int transOffset = 0;
 
     double accum = 0;
     double timeout = 0.1;
@@ -137,7 +138,9 @@ public:
                 // Extra increment
                 if (i < current.length) i++;
                 rendOffset = i;
-            }
+                transOffset = cast(int)rendOffset;
+            } else if (transOffset != current.length+1) transOffset++;
+            
         }
     }
 
@@ -257,6 +260,12 @@ public:
 
             vec2 lCursor = cursor;
             float rot = 0;
+            vec4 fColor = vec4(
+                color.x, 
+                color.y, 
+                color.z, 
+                i == transOffset-1 ? 0.8 : 1
+            );
 
             if (wave > 0) {
                 cursor.y += sin((currTime()+cast(float)i)*waveSpeed)*wave;
@@ -269,7 +278,7 @@ public:
             
 
             // Draw font
-            UI.UIFont.draw(c, cursor, vec2(advance.x/2, metrics.y/2), rot, color);
+            UI.UIFont.draw(c, cursor, vec2(advance.x/2, metrics.y/2), rot, fColor);
             cursor = lCursor;
             cursor.x += advance.x;
         }
