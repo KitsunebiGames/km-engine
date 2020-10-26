@@ -15,7 +15,7 @@ class Camera {
 private:
 
     mat4 g_matrix() {
-        return mat4.perspective(GameWindow.width, GameWindow.height, fov, 0.1, 50) * transform.matrix;
+        return mat4.perspective(cameraTargetWidth, cameraTargetHeight, fov, 0.1, 50) * transform.matrix;
     }
 
 public:
@@ -70,9 +70,25 @@ public:
         Matrix for this camera
     */
     mat4 matrix() {
-        int largestSize = max(GameWindow.width, GameWindow.height);
+        int largestSize = max(kmViewportWidth, kmViewportHeight);
         return 
-            mat4.orthographic(0f, cast(float)GameWindow.width, cast(float)GameWindow.height, 0, 0, largestSize) * 
+            mat4.orthographic(0f, cast(float)cameraTargetWidth, cast(float)cameraTargetHeight, 0, 0, largestSize) * 
             mat4.translation(position.x, position.y, -10);
     }
+}
+
+private int cameraTargetWidth;
+private int cameraTargetHeight;
+
+void kmSetCameraTargetSize(int width, int height) {
+    cameraTargetWidth = width;
+    cameraTargetHeight = height;
+}
+
+int kmCameraViewWidth() {
+    return cameraTargetWidth;
+}
+
+int kmCameraViewHeight() {
+    return cameraTargetHeight;
 }

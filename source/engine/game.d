@@ -13,14 +13,24 @@ private double currentTime_;
 private double deltaTime_;
 
 /**
+    Function run when the game is to initialize
+*/
+void function() gameInit;
+
+/**
     Function run when the game is to update
 */
 void function() gameUpdate;
 
 /**
-    Function run when the game is to initialize
+    Function run after the main rendering has happened, Used to draw borders for the gameplay
 */
-void function() gameInit;
+void function() gameBorder;
+
+/**
+    Function run after updates and rendering of the game
+*/
+void function() gamePostUpdate;
 
 /**
     Function run when the game is to clean up
@@ -29,24 +39,41 @@ void function() gameCleanup;
 
 /**
     Starts the game loop
+
+    viewportSize sets the desired viewport size for the framebuffer, defaults to 1080p (1920x1080)
 */
-void startGame() {
+void startGame(vec2i viewportSize = vec2i(1920, 1080)) {
     gameInit();
     resetTime();
+
+    Framebuffer framebuffer = new Framebuffer(GameWindow, viewportSize);
     while(!GameWindow.isExitRequested) {
 
         currentTime_ = glfwGetTime();
         deltaTime_ = currentTime_-previousTime_;
         previousTime_ = currentTime_;
         
-        // Clear color and depth buffers
+        // Bind our framebuffer
+        framebuffer.bind();
+
+            // Clear color and depth buffers
+            glClearColor(0, 0, 0, 1);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            // Update and render the game
+            gameUpdate();
+
+        // Unbind our framebuffer
+        framebuffer.unbind();
+    
+        // Clear color and depth bits
+        glClearColor(0, 0, 0, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // Reset OpenGL viewport
-        GameWindow.resetViewport();
-
-        // Update and render the game
-        gameUpdate();
+        // Draw border, framebuffer and post update content
+        if (gameBorder !is null) gameBorder();
+        framebuffer.renderToFit();
+        if (gamePostUpdate !is null) gamePostUpdate();
 
         // Update the mouse's state
         Mouse.update();

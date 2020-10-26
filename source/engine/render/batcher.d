@@ -56,6 +56,7 @@ private:
     GLint vp;
 
     Texture currentTexture;
+    Framebuffer currentFboTex;
 
     void addVertexData(vec2 position, vec2 uvs, vec4 color) {
         data[dataOffset..dataOffset+DataLength] = [position.x, position.y, uvs.x, uvs.y, color.x, color.y, color.z, color.w];
@@ -175,15 +176,73 @@ public:
     }
 
     /**
+        Draws a framebuffer texture
+
+        Automatically flushes after draw
+    */
+    void draw(Framebuffer fbo, vec4 position, vec4 cutout = vec4.init, vec2 origin = vec2(0, 0), float rotation = 0f, SpriteFlip flip = SpriteFlip.None, vec4 color = vec4(1, 1, 1, 1)) {
+
+        // Flush if neccesary
+        if (dataOffset == DataSize*EntryCount) flush();
+        if (currentTexture !is null) flush();
+
+        // Update current texture
+        currentFboTex = fbo;
+
+        // Calculate rotation, position and scaling.
+        mat4 transform =
+            mat4.translation(-origin.x, -origin.y, 0) *
+            mat4.translation(position.x, position.y, 0) *
+            mat4.translation(origin.x, origin.y, 0) *
+            mat4.zrotation(rotation) * 
+            mat4.translation(-origin.x, -origin.y, 0) *
+            mat4.scaling(position.z, position.w, 0);
+
+        // If cutout has not been set (all values are NaN or infinity) we set it to use the entire texture
+        if (!cutout.isFinite) {
+            cutout = vec4(0, fbo.realHeight, fbo.realWidth, -fbo.realHeight);
+        }
+
+        // Get the area of the texture with a tiny bit cut off to avoid textures bleeding in to each other
+        // TODO: add a 1x1 px transparent border around textures instead?
+        enum cutoffOffset = 0.8;
+        enum cutoffAmount = cutoffOffset*2;
+
+        vec4 uvArea = vec4(
+            (flip & SpriteFlip.Horizontal) > 0 ? (cutout.x+cutout.z)-cutoffAmount : (cutout.x)+cutoffOffset,
+            (flip & SpriteFlip.Vertical)   > 0 ? (cutout.y+cutout.w)-cutoffAmount : (cutout.y)+cutoffOffset,
+            (flip & SpriteFlip.Horizontal) > 0 ? (cutout.x)+cutoffOffset : (cutout.x+cutout.z)-cutoffAmount,
+            (flip & SpriteFlip.Vertical)   > 0 ? (cutout.y)+cutoffOffset : (cutout.y+cutout.w)-cutoffAmount,
+        );
+
+        // Triangle 1
+        addVertexData(vec2(0, 1).transformVerts(transform), vec2(uvArea.x, uvArea.w), color);
+        addVertexData(vec2(1, 0).transformVerts(transform), vec2(uvArea.z, uvArea.y), color);
+        addVertexData(vec2(0, 0).transformVerts(transform), vec2(uvArea.x, uvArea.y), color);
+        
+        // Triangle 2
+        addVertexData(vec2(0, 1).transformVerts(transform), vec2(uvArea.x, uvArea.w), color);
+        addVertexData(vec2(1, 1).transformVerts(transform), vec2(uvArea.z, uvArea.w), color);
+        addVertexData(vec2(1, 0).transformVerts(transform), vec2(uvArea.z, uvArea.y), color);
+
+        tris += 2;
+
+        // Auto flush
+        this.flush!true();
+    }
+
+    /**
         Flush the buffer
     */
-    void flush() {
+    void flush(bool isFbo=false)() {
 
         // Disable depth testing for the batcher
         glDisable(GL_DEPTH_TEST);
 
         // Don't draw empty textures
-        if (currentTexture is null) return;
+        static if (!isFbo) {
+            if (currentTexture is null) return;
+        }
 
         // Bind VAO
         glBindVertexArray(vao);
@@ -195,7 +254,12 @@ public:
         glBufferSubData(GL_ARRAY_BUFFER, 0, dataOffset*float.sizeof, data.ptr);
 
         // Bind the texture
-        currentTexture.bind();
+        static if (!isFbo) {
+            currentTexture.bind();
+        } else {
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, currentFboTex.getTexId());
+        }
 
         // Use our sprite batcher shader and bind our camera matrix
         spriteBatchShader.use();

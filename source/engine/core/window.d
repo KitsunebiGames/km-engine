@@ -7,6 +7,7 @@
 module engine.core.window;
 import bindbc.glfw;
 import bindbc.opengl;
+import engine.render : kmViewport;
 
 /**
     Static instance of the game window
@@ -38,7 +39,7 @@ public:
     /**
         Constructor
     */
-    this(string title = "KitsuneMahjongEngine", int width = 640, int height = 480) {
+    this(string title = "My Game", int width = 640, int height = 480) {
         this.title_ = title;
         this.width_ = width;
         this.height_ = height;
@@ -97,6 +98,39 @@ public:
     }
 
     /**
+        Resizes the window
+    */
+    void resize(int width, int height) {
+        this.width_ = width;
+        this.height_ = height;
+        glfwSetWindowSize(window, width, height);
+    }
+
+    /**
+        Gets whether the window is fullscreen
+    */
+    bool fullscreen() {
+        return glfwGetWindowMonitor(window) !is null;
+    }
+
+    /**
+        Sets the window's fullscreen state
+    */
+    void fullscreen(bool value) {
+        if (this.fullscreen == value) return;
+
+        // TODO: change state
+        // HACK: currently we're just setting the window as borderless
+        if (value) {
+            const(GLFWvidmode)* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+            this.resize(mode.width, mode.height);
+            glfwSetWindowAttrib(window, GLFW_DECORATED, GLFW_FALSE);
+        } else {
+            glfwSetWindowAttrib(window, GLFW_DECORATED, GLFW_TRUE);
+        }
+    }
+
+    /**
         poll for new window events
     */
     void update() {
@@ -143,7 +177,7 @@ public:
         Resets the OpenGL viewport to fit the window
     */
     void resetViewport() {
-        glViewport(0, 0, width, height);
+        kmViewport(0, 0, width, height);
     }
 
     /**

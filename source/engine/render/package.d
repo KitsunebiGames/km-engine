@@ -12,6 +12,7 @@ public import engine.render.shader;
 public import engine.render.tile;
 public import engine.render.texture;
 public import engine.render.batcher;
+public import engine.render.fbo;
 
 void initRender() {
     
@@ -24,4 +25,51 @@ void initRender() {
     glDepthFunc(GL_LESS);
 
     GameBatch = new SpriteBatch();
+}
+
+private int viewportX;
+private int viewportY;
+private int viewportW;
+private int viewportH;
+
+/**
+    Sets the viewport
+*/
+void kmViewport(int x, int y, int width, int height) {
+    import engine.math.camera : kmSetCameraTargetSize;
+
+    viewportX = x;
+    viewportY = y;
+    viewportW = width;
+    viewportH = height;
+    glViewport(x, y, width, height);
+    kmSetCameraTargetSize(width, height);
+}
+
+/**
+    Returns the viewport X
+*/
+int kmViewportX() {
+    return viewportX;
+}
+
+/**
+    Returns the viewport Y
+*/
+int kmViewportY() {
+    return viewportY;
+}
+
+/**
+    Returns the viewport width
+*/
+int kmViewportWidth() {
+    return viewportW;
+}
+
+/**
+    Returns the viewport height
+*/
+int kmViewportHeight() {
+    return viewportH;
 }

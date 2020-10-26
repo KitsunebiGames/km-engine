@@ -63,6 +63,14 @@ void _update() {
     // Update and draw your game
 }
 
+void _border() {
+    // Draw a border if you want to
+}
+
+void _postUpdate() {
+    // Draw a border if you want to
+}
+
 void _cleanup() {
     // Clean up resources when game is requested to close.
 }
@@ -72,11 +80,13 @@ int main() {
     gameInit = &_init;
     gameUpdate = &_update;
     gameCleanup = &_cleanup;
+    gameBorder = &_border;
+    gamePostUpdate = &_postUpdate;
 
     // Handle game initialization, looping and closing the engine after use.
     // It's recommended using a try/catch block to catch any errors that might pop up.
     initEngine();
-    startGame();
+    startGame(vec2i(1920, 1080)); // The variable is the desired size of the game's frame buffer.
     closeEngine();
     return 0;
 }
