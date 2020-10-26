@@ -8,7 +8,8 @@
 */
 module engine.vn;
 import engine.vn.render;
-import engine.vn.log;
+public import engine.vn.log;
+public import engine.vn.dialg;
 import engine;
 
 /**
@@ -38,5 +39,10 @@ public:
         The text log
     */
     VNLog log;
+
+    /**
+        The dialogue manager
+    */
+    DialogueManager dialogue;
 
 }
