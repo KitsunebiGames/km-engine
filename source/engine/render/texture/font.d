@@ -138,6 +138,13 @@ private:
 public:
 
     /**
+        Gets the font metrics
+    */
+    vec2 getMetrics() {
+        return metrics;
+    }
+
+    /**
         Destroys the font
     */
     ~this() {
