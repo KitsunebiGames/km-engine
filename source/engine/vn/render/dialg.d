@@ -40,6 +40,13 @@ private:
 public:
 
     /**
+        Gets the current text buffer being rendered
+    */
+    dstring currentTextBuffer() {
+        return current;
+    }
+
+    /**
         Whether the text requested for the dialogue to be hidden
     */
     bool isHidingRequested() {
@@ -109,7 +116,7 @@ public:
                 size_t i = rendOffset;
 
                 // Parse time changes
-                while (i < current.length-3 && current[i] == '[' && current[i+1] == '%') {
+                while (i < current.length-3 && current[i] == '[' && current[i+1] == '&') {
                     i += 2;
                     
                     while(i < current.length && current[i] != ']') i++;
@@ -167,7 +174,7 @@ public:
 
             // Parse mode changes
             if (i < current.length-3) {
-                while (current[i] == '[' && current[i+1] == '%') {
+                while (current[i] == '[' && current[i+1] == '&') {
                     i += 2;
 
                     // Go till end of instruction
