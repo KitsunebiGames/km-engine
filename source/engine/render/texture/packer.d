@@ -129,7 +129,7 @@ private:
         }
 
         // Horizontal Splitting
-        if (usedNode.y < freeNode.y + freeNode.z && usedNode.y + usedNode.z > freeNode.y) {
+        if (usedNode.y < freeNode.y + freeNode.w && usedNode.y + usedNode.w > freeNode.y) {
 
             // New node at left of used
             if (usedNode.x > freeNode.x && usedNode.x < freeNode.x + freeNode.z) {
