@@ -6,6 +6,7 @@
 */
 module engine.vn.script;
 import engine.vn;
+public import engine.vn.script.instr;
 
 /**
     A bookmark to where in the script to continue from (for saving)
@@ -60,11 +61,54 @@ public:
     VNState state;
 
     /**
+        Destructor
+    */
+    ~this() {
+        next = -1;
+        manuscripts.clear();
+    }
+
+    /**
+        Constructs a new script
+        Always runs the "main" scene
+    */
+    this(VNState state, Scene[string] manuscript) {
+        this.state = state;
+        manuscripts = manuscript;
+        this.changeScene("main");
+    }
+
+    /**
+        Changes the scene
+    */
+    void changeScene(string scene) {
+        currentScene = scene;
+        next = 0;
+        state.loadCharacters(manuscripts[currentScene].characters);
+    }
+
+    /**
         Run the next instruction(s)
         Execution continues until the next non-blocking instruction
     */
     void runNext() {
-        while(!instructions[next].execute(this)) next++;
+        while(!instructions[next].execute(this)) {
+            next++;
+            
+            // Loop if we're at the end of the instructions
+            if (next >= instructions.length) {
+                next = 0;
+                runNext();
+                return;
+            }
+        }
+        next++;
+
+        // Loop if we're at the end of the instructions
+        if (next >= instructions.length) {
+            next = 0;
+            return;
+        }
     }
 
     /**
@@ -98,6 +142,14 @@ public:
 */
 class Scene {
 public:
+
+    /**
+        Creates a new scene
+    */
+    this(string[] characters, IScriptInstr[] instructions) {
+        this.characters = characters;
+        this.instructions = instructions;
+    }
 
     /**
         The characters to be loaded in this scene

@@ -77,11 +77,15 @@ void startGame(vec2i viewportSize = vec2i(1920, 1080)) {
 
         // Update the mouse's state
         Mouse.update();
+        Input.update();
 
         // Swap buffers and update the window
         GameWindow.swapBuffers();
         GameWindow.update();
     }
+
+    // Pop all states
+    GameStateManager.popAll();
 
     // Game cleanup
     gameCleanup();

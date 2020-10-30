@@ -27,17 +27,26 @@ private textInstr parseInstr(dstring txt) {
 */
 class DialogueRenderer {
 private:
+    enum DEFAULT_TIMEOUT = 0.045;
+
     dstring current;
     size_t rendOffset = 0;
 
     double accum = 0;
-    double timeout = 0.1;
+    double timeout = DEFAULT_TIMEOUT;
 
     double sleep = 0;
 
     bool requestHide = false;
 
 public:
+
+    /**
+        Resets text speed
+    */
+    void resetSpeed() {
+        timeout = DEFAULT_TIMEOUT;
+    }
 
     /**
         Gets the current text buffer being rendered
@@ -59,6 +68,7 @@ public:
     void skip() {
         if (!done) {
             rendOffset = current.length;
+            resetSpeed();
         }
     }
 
@@ -126,6 +136,10 @@ public:
                     textInstr instr = parseInstr(current[rendOffset+2..i-1]);
                     switch(instr.instr) {
                         case "tm"d:
+                            if (instr.value == "clear") {
+                                timeout = DEFAULT_TIMEOUT;
+                                break;
+                            }
                             timeout = parse!double(instr.value);
                             break;
                         case "sl"d:

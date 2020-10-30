@@ -15,23 +15,24 @@ public:
     dstring[] log;
 
     /**
-        Adds item to the log
+        Adds action to log
     */
-    void addText(string text) {
-        log ~= "%s"d.format(text);
+    void add(dstring action) {
+        log ~= action;
     }
 
     /**
         Adds character saying something to log
     */
-    void addChar(string c, string text) {
-        log ~= "[c=FFF0F0]%s[c=clear]: %s"d.format(c, text);
-    }
+    void add(dstring c, dstring text) {
+        
+        // Just add action if we have no origin
+        if (c.length == 0) {
+            this.add(text);
+            return;
+        }
 
-    /**
-        Adds action to log
-    */
-    void addAction(string action) {
-        log ~= "[c=F0F0FF]%s[c=clear]"d.format(action);
+        // Add our dialogue
+        log ~= "[&cl1,0.5,0.5]%s[&clclear]: %s"d.format(c, text);
     }
 }

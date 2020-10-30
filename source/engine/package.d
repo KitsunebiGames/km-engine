@@ -13,6 +13,7 @@ public import engine.audio;
 public import engine.net;
 public import engine.ui;
 public import engine.game;
+public import engine.i18n;
 
 import bindbc.glfw;
 import bindbc.openal;

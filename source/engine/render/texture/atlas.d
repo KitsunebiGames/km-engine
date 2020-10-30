@@ -121,7 +121,9 @@ public:
         Remove named texture
     */
     void remove(string name) {
-        texTable[name].parentAtlas.remove(name);
+        if (name in texTable) {
+            texTable[name].parentAtlas.remove(name);
+        }
     }
 }
 

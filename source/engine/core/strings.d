@@ -5,7 +5,15 @@
     Authors: Luna Nielsen
 */
 module engine.core.strings;
-import std.utf : toUTF32, toUTF16;
+import std.utf : toUTF32, toUTF16, toUTF8;
+
+/**
+    Convert any type of string to a engine usable string
+*/
+string toDString(T)(T str) if (isString!T) {
+    static if (is(T == string)) return str;
+    else return toUTF8(str); 
+}
 
 /**
     Convert any type of string to a engine usable string

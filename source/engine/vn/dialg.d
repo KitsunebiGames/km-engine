@@ -6,6 +6,8 @@
 */
 module engine.vn.dialg;
 import engine.vn.render.dialg;
+import engine.vn.log;
+import engine.vn;
 import engine;
 
 /**
@@ -14,13 +16,19 @@ import engine;
 class DialogueManager {
 private:
     DialogueRenderer renderer;
-    dstring speaker;
+    string speaker;
+    dstring dspeaker;
+    VNLog log;
+    VNState state;
 
 public:
-    this(string barTexture) {
+    this(VNState state) {
+        this.state = state;
+
+        log = new VNLog();
         renderer = new DialogueRenderer();
         if (!GameAtlas.has("ui_vnbar")) {
-            GameAtlas.add("ui_vnbar", barTexture);
+            GameAtlas.add("ui_vnbar", "assets/textures/ui/vn-bar.png");
         }
     }
 
@@ -28,6 +36,11 @@ public:
         Whether the hide the dialogue box
     */
     bool hide = false;
+
+    /**
+        Whether the dialogue requested to automatically advance
+    */
+    bool autoNext = false;
 
     /**
         Whether the text is done scrolling
@@ -50,9 +63,15 @@ public:
         renderer.update();
     }
 
-    void push(dstring origin, dstring dialogue) {
-        speaker = origin;
+    /**
+        Push dialogue/action to the renderer
+        Automatically pu
+    */
+    void push(dstring dialogue, dstring origin = null) {
+        speaker = origin.toDString;
+        dspeaker = origin;
         renderer.pushText(dialogue);
+        log.add(origin, dialogue);
     }
 
     /**
@@ -69,7 +88,14 @@ public:
         GameBatch.flush();
 
         // Draw name tag
-        if (speaker.length > 0) UI.UIFont.draw(speaker, vec2(32, 804));
+        if (speaker.length > 0) {
+            UI.UIFont.draw(
+                speaker in state.characters ? 
+                state.characters[speaker].displayName : 
+                dspeaker, 
+                vec2(32, 804)
+            );
+        }
         UI.UIFont.flush();
 
         // Slow type the dialogue
