@@ -42,6 +42,11 @@ private {
 }
 
 /**
+    The game's public font
+*/
+Font GameFont;
+
+/**
     Initialize the font subsystem
 */
 void initFontSystem() {
@@ -56,6 +61,9 @@ void initFontSystem() {
     fontCamera = new Camera2D();
     fontShader = new Shader(import("shaders/font.vert"), import("shaders/font.frag"));
     vp = fontShader.getUniformLocation("vp");
+
+    // The game's font
+    GameFont = new Font(cast(ubyte[])import("fonts/KosugiMaru.ttf"), 24);
 }
 
 /**
@@ -78,6 +86,8 @@ private:
     }
 
     vec2 metrics;
+
+    ubyte[] faceMemory;
 
     FT_Face fontFace;
     TexturePacker fontPacker;
@@ -135,6 +145,21 @@ private:
         dataOffset += DataLength;
     }
 
+    void init_(int canvasSize) {
+
+        // Select unicode so we can render i18n text
+        FT_Select_Charmap(fontFace, FT_ENCODING_UNICODE);
+
+        // Create the texture
+        fontTexture = new Texture(canvasSize, canvasSize, GL_RED, 1);
+        fontPacker = new TexturePacker(vec2i(canvasSize, canvasSize));
+
+        glBindVertexArray(vao);
+        glGenBuffers(1, &buffer);
+        glBindBuffer(GL_ARRAY_BUFFER, buffer);
+        glBufferData(GL_ARRAY_BUFFER, float.sizeof*data.length, data.ptr, GL_DYNAMIC_DRAW);
+    }
+
 public:
 
     /**
@@ -151,6 +176,11 @@ public:
         destroy(fontTexture);
         FT_Done_Face(fontFace);
         glDeleteBuffers(1, &buffer);
+
+        // Destroy face memory if we loaded it from memory
+        if (faceMemory !is null) {
+            destroy(faceMemory);
+        }
     }
 
     /**
@@ -165,19 +195,35 @@ public:
         enforce(err == FT_Err_Ok, "Error %s while loading font file".format(err));
 
         // Change size of text
-        changeSize(size);
+        this.changeSize(size);
 
-        // Select unicode so we can render i18n text
-        FT_Select_Charmap(fontFace, FT_ENCODING_UNICODE);
+        // Initializes the texture
+        this.init_(canvasSize);
+    }
 
-        // Create the texture
-        fontTexture = new Texture(canvasSize, canvasSize, GL_RED, 1);
-        fontPacker = new TexturePacker(vec2i(canvasSize, canvasSize));
+    /**
+        Constructs a new font
 
-        glBindVertexArray(vao);
-        glGenBuffers(1, &buffer);
-        glBindBuffer(GL_ARRAY_BUFFER, buffer);
-        glBufferData(GL_ARRAY_BUFFER, float.sizeof*data.length, data.ptr, GL_DYNAMIC_DRAW);
+        canvasSize specifies how big the texture for the font will be.
+    */
+    this(ubyte[] memFace, int size, int canvasSize = 4096) {
+
+        // Copy data from memFace
+        import std.algorithm.mutation : copy;
+        faceMemory = new ubyte[memFace.length];
+        copy(memFace, faceMemory);
+
+        AppLog.info("FontLoader", "Loading font from memory with size %s", memFace.length);
+        int err = FT_New_Memory_Face(lib, faceMemory.ptr, faceMemory.length, 0, &fontFace);
+
+        enforce(err != FT_Err_Unknown_File_Format, "Unknown file format");
+        enforce(err == FT_Err_Ok, "Error %s while loading font file".format(err));
+
+        // Change size of text
+        this.changeSize(size);
+
+        // Initializes the texture
+        this.init_(canvasSize);
     }
 
 

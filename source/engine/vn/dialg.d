@@ -81,7 +81,7 @@ public:
         if (hide) return;
 
         // Set font size
-        UI.UIFont.changeSize(48);
+        GameFont.changeSize(48);
 
         // Draw the bar
         GameBatch.draw("ui_vnbar", vec4(0, 1080-292, 1920, 292));
@@ -89,14 +89,14 @@ public:
 
         // Draw name tag
         if (speaker.length > 0) {
-            UI.UIFont.draw(
+            GameFont.draw(
                 speaker in state.characters ? 
                 state.characters[speaker].displayName : 
                 dspeaker, 
                 vec2(32, 804)
             );
         }
-        UI.UIFont.flush();
+        GameFont.flush();
 
         // Slow type the dialogue
         renderer.draw(vec2(48, 900));

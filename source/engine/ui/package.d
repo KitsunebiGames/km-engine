@@ -13,35 +13,10 @@ import bindbc.opengl;
 import core.memory;
 
 /**
-    Initialize UI
-*/
-void initUI(string uiFont) {
-    UI.changeFont(uiFont);
-}
-
-/**
     Base stuff for UI rendering
 */
 class UI {
 public:
-    /**
-        The font used within UI
-    */
-    static Font UIFont;
-    
-    /**
-        Safetly changes the UI font
-    */
-    static void changeFont(string font) {
-        if (UIFont !is null) {
-
-            // Destroy the current font and free it from memory
-            // This will force the texture memory to be freed
-            destroy!false(UIFont);
-            GC.collect();
-        }
-        UIFont = new Font(font, 24);
-    }
 
     /**
         Sets up state for UI rendering

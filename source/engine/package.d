@@ -64,7 +64,6 @@ void initEngine() {
     AppLog.info("Engine", "Intialized internal state for renderer...");
 
     initPlaylist();
-    initUI("assets/fonts/KosugiMaru.ttf");
     AppLog.info("Engine", "Initialized smaller subsystems...");
 }
 

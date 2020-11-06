@@ -45,6 +45,7 @@ The Kitsune Mahjong engine requires the following dependencies to be present to 
  * libvorbis
  * libvorbisfile
  * FreeType
+ * Kosugi Maru Font (in [`res/fonts`](/res/fonts) w/ license)
 
 On Windows these libraries are copied from the included libs/ folder.
 

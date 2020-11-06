@@ -167,9 +167,9 @@ public:
 
         // If there's no manuscript then we don't need to try to draw stuff
         if (script is null) {
-            UI.UIFont.changeSize(48);
-            UI.UIFont.draw("No manuscripts are loaded!"d, vec2(16, 16));
-            UI.UIFont.flush();
+            GameFont.changeSize(48);
+            GameFont.draw("No manuscripts are loaded!"d, vec2(16, 16));
+            GameFont.flush();
             return;
         }
 

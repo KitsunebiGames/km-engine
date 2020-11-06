@@ -15,7 +15,7 @@ libs "vorbisfile" "ogg" "vorbis"
 versions "GL_33" "GLFW_33"
 stringImportPaths "res/"
 targetPath "out/"
-copyFiles "libs/COPYING-FreeType" "libs/COPYING-XIPH" "libs/COPYING-OpenALSoft" "libs/COPYING-glfw3"
+copyFiles "libs/COPYING-FreeType" "libs/COPYING-XIPH" "libs/COPYING-OpenALSoft" "libs/COPYING-glfw3" "res/fonts/LICENSE-KosugiMaru.txt"
 
 // For Windows
 sourceFiles "libs/ogg.lib" "libs/vorbisfile.lib" "libs/vorbis.lib" platform="windows"

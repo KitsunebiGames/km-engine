@@ -168,11 +168,11 @@ public:
         if (empty) return;
 
         // Always flush drawing when done
-        scope(exit) UI.UIFont.flush();
+        scope(exit) GameFont.flush();
         
         // Setup
-        UI.UIFont.changeSize(size);
-        vec2 metrics = UI.UIFont.getMetrics();
+        GameFont.changeSize(size);
+        vec2 metrics = GameFont.getMetrics();
         at += vec2(metrics.x/2, metrics.y/2);;
         vec2 cursor = at;
         int shake = 0;
@@ -184,7 +184,7 @@ public:
 
             // Values for this iteration
             dchar c = current[i];
-            vec2 advance = UI.UIFont.advance(c);
+            vec2 advance = GameFont.advance(c);
 
             // Parse mode changes
             if (i < current.length-3) {
@@ -258,7 +258,7 @@ public:
                     
                     if (i < current.length) {
                         c = current[i];
-                        advance = UI.UIFont.advance(c);
+                        advance = GameFont.advance(c);
                     } else return;
                 }
             }
@@ -281,7 +281,7 @@ public:
 
             if (wave > 0) {
                 cursor.y += sin((currTime()+cast(float)i)*waveSpeed)*wave;
-                if (waveRot) rot -= sin((currTime()+cast(float)i)*waveSpeed)*(0.015*wave);
+                if (waveRot) rot += sin((currTime()+cast(float)i)*waveSpeed)*(0.015*wave);
             }
             if (shake > 0) {
                 cursor.x += ((uniform01()*2)-1)*shake;
@@ -290,7 +290,7 @@ public:
             
 
             // Draw font
-            UI.UIFont.draw(c, cursor, vec2(advance.x/2, metrics.y/2), rot, color);
+            GameFont.draw(c, cursor, vec2(advance.x/2, metrics.y/2), rot, color);
             cursor = lCursor;
             cursor.x += advance.x;
         }
